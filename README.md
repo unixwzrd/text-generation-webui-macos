@@ -1,12 +1,25 @@
-# OLD VERSION - 1.3.1
+# OLD VERSION - 1.3.1 Patched for macOS and Apple Silicon
 
-Presumed last version to work with macOS.
+Patched and working with macOS and Apple Silicon M1/M2 GPU now.
 
-The GGML Llama2 support is in this relkease, but it may not be tested on macOS.
+GGML support is in this release, and has not been extensively tested. From the look of upstream commits, there are some changes which must be made before this will work with Llama2 models.
 
-If you want the most recent version go here:
+If you want the most recent version, from the oobabooga reposiotry, go here: [oobabooga/text-generation-webgui](https://github.com/oobabooga/text-generation-webui)
 
-[oobabooga/text-generation-webgui](https://github.com/oobabooga/text-generation-webui)
+Otherwise, use these instructions I have on putting together the macOS Python environment. These instructions are not only useful for setting up oobabooga, but also for anyone working in data analytics, machine learning, deep learning, scientific computing, and other areas that can benefit from an optimized Python GPU environment on Apple Silicon.
+
+* [Building Apple Silicon Support for oobabooga text-generation-webui](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
+* [oobabooga macOS Apple Silicon Quick Start for the Impatient](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.md)
+
+I will be updating this README file with new information specifically regarding macOS and Apple Silicon.
+
+I would like to work closely with the oobaboogs team and try to implement simkilar solutions so the web UI can have a similar look and feel.
+
+Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can Buy Me a Coffee, sponsor this project, or consider me for job opportunities.
+
+While the focus of this branch is to enhance macOS and Apple Silicon support, I aim to maintain compatibility with Linux and POSIX operating systems. Contributions and feedback related to Linux compatibility are always welcome.
+
+Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
 # Text generation web UI
 
@@ -365,6 +378,7 @@ The presets that are included by default are the result of a contest that receiv
 
 ## Credits
 
-- Gradio dropdown menu refresh button, code for reloading the interface: https://github.com/AUTOMATIC1111/stable-diffusion-webui
-- Godlike preset: https://github.com/KoboldAI/KoboldAI-Client/wiki/Settings-Presets
-- Code for some of the sliders: https://github.com/PygmalionAI/gradio-ui/
+* The devopers and maintainers of the original oobabooga repository: [oobabooga/text-generation-webgui](https://github.com/oobabooga/text-generation-webui)
+* Gradio dropdown menu refresh button, code for reloading the interface: https://github.com/AUTOMATIC1111/stable-diffusion-webui
+* Godlike preset: https://github.com/KoboldAI/KoboldAI-Client/wiki/Settings-Presets
+* Code for some of the sliders: https://github.com/PygmalionAI/gradio-ui/

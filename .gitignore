@@ -1,10 +1,11 @@
 cache
 characters
 training/datasets
-extensions/silero_tts/outputs
+extensions/character_bias/bias_options.txt
 extensions/elevenlabs_tts/outputs
-extensions/sd_api_pictures/outputs
 extensions/multimodal/pipelines
+extensions/sd_api_pictures/outputs
+extensions/silero_tts/outputs
 logs
 loras
 models
@@ -22,10 +23,10 @@ venv/
 *.bak
 *.ipynb
 *.log
+*.mp3
 
 settings.json
 settings.yaml
-notification.mp3
 img_bot*
 img_me*
 prompts/[0-9]*
@@ -33,6 +34,6 @@ models/config-user.yaml
 
 .DS_Store
 Thumbs.db
-extensions/character_bias/bias_options.txt
+
 *.swp
 .*.un~
