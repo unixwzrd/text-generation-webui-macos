@@ -1,3 +1,13 @@
+# OLD VERSION - 1.3.1
+
+Presumed last version to work with macOS.
+
+The GGML Llama2 support is in this relkease, but it may not be tested on macOS.
+
+If you want the most recent version go here:
+
+[oobabooga/text-generation-webgui](https://github.com/oobabooga/text-generation-webui)
+
 # Text generation web UI
 
 A gradio web UI for running Large Language Models like LLaMA, llama.cpp, GPT-J, Pythia, OPT, and GALACTICA.
@@ -89,10 +99,6 @@ git clone https://github.com/oobabooga/text-generation-webui
 cd text-generation-webui
 pip install -r requirements.txt
 ```
-
-#### llama.cpp with GPU acceleration
-
-Requires the additional compilation step described here: [GPU acceleration](https://github.com/oobabooga/text-generation-webui/blob/main/docs/llama.cpp-models.md#gpu-acceleration).
 
 #### bitsandbytes
 
@@ -251,6 +257,8 @@ Optionally, you can use the following command-line flags:
 | `--n-gpu-layers N_GPU_LAYERS` | Number of layers to offload to the GPU. Only works if llama-cpp-python was compiled with BLAS. Set this to 1000000000 to offload all layers to the GPU. |
 | `--n_ctx N_CTX` | Size of the prompt context. |
 | `--llama_cpp_seed SEED` | Seed for llama-cpp models. Default 0 (random). |
+| `--n_gqa N_GQA`         | grouped-query attention. Must be 8 for llama2 70b. |
+| `--rms_norm_eps RMS_NORM_EPS`  | Must be 1e-5 for llama2 70b. |
 
 #### AutoGPTQ
 
