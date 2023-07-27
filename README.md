@@ -21,15 +21,32 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
-# Text generation web UI
+- [OLD VERSION - 1.3.1 Patched for macOS and Apple Silicon](#old-version---131-patched-for-macos-and-apple-silicon)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Downloading models](#downloading-models)
+      - [GGML models](#ggml-models)
+      - [GPT-4chan](#gpt-4chan)
+  - [Starting the web UI](#starting-the-web-ui)
+      - [Basic settings](#basic-settings)
+      - [Model loader](#model-loader)
+      - [Accelerate/transformers](#acceleratetransformers)
+      - [Accelerate 4-bit](#accelerate-4-bit)
+      - [llama.cpp](#llamacpp)
+      - [AutoGPTQ](#autogptq)
+      - [ExLlama](#exllama)
+      - [GPTQ-for-LLaMa](#gptq-for-llama)
+      - [FlexGen](#flexgen)
+      - [DeepSpeed](#deepspeed)
+      - [RWKV](#rwkv)
+      - [Gradio](#gradio)
+      - [API](#api)
+      - [Multimodal](#multimodal)
+  - [Presets](#presets)
+  - [Contributing](#contributing)
+  - [Community](#community)
+  - [Credits](#credits)
 
-A gradio web UI for running Large Language Models like LLaMA, llama.cpp, GPT-J, Pythia, OPT, and GALACTICA.
-
-Its goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) of text generation.
-
-|![Image1](https://github.com/oobabooga/screenshots/raw/main/qa.png) | ![Image2](https://github.com/oobabooga/screenshots/raw/main/cai3.png) |
-|:---:|:---:|
-|![Image3](https://github.com/oobabooga/screenshots/raw/main/gpt4chan.png) | ![Image4](https://github.com/oobabooga/screenshots/raw/main/galactica.png) |
 
 ## Features
 
@@ -39,7 +56,7 @@ Its goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https://github.
 * LoRA: load and unload LoRAs on the fly, load multiple LoRAs at the same time, train a new LoRA
 * Precise instruction templates for chat mode, including Alpaca, Vicuna, Open Assistant, Dolly, Koala, ChatGLM, MOSS, RWKV-Raven, Galactica, StableLM, WizardLM, Baize, Ziya, Chinese-Vicuna, MPT, INCITE, Wizard Mega, KoAlpaca, Vigogne, Bactrian, h2o, and OpenBuddy
 * [Multimodal pipelines, including LLaVA and MiniGPT-4](https://github.com/oobabooga/text-generation-webui/tree/main/extensions/multimodal)
-* 8-bit and 4-bit inference through bitsandbytes
+* 8-bit and 4-bit inference through bitsandbytes **CPU only mode for macOS, bitsandbytes does not support Apple Silicon M1/M2 processors**
 * CPU mode for transformers models
 * [DeepSpeed ZeRO-3 inference](docs/DeepSpeed.md)
 * [Extensions](docs/Extensions.md)
@@ -47,100 +64,18 @@ Its goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https://github.
 * Very efficient text streaming
 * Markdown output with LaTeX rendering, to use for instance with [GALACTICA](https://github.com/paperswithcode/galai)
 * Nice HTML output for GPT-4chan
-* API, including endpoints for websocket streaming ([see the examples](https://github.com/oobabooga/text-generation-webui/blob/main/api-examples))
+* API, including endpoints for websocket streaming ([see the examples](https://github.com/unixwzrd/text-generation-webui/blob/main/api-examples))
 
-To learn how to use the various features, check out the Documentation: https://github.com/oobabooga/text-generation-webui/tree/main/docs
+To learn how to use the various features, check out the Documentation: https://github.com/unixwzrd/text-generation-webui/tree/main/docs
 
 ## Installation
 
-### One-click installers
+Currently only manual installation until an installer can be put together.
 
-| Windows | Linux | macOS | WSL |
-|--------|--------|--------|--------|
-| [oobabooga-windows.zip](https://github.com/oobabooga/text-generation-webui/releases/download/installers/oobabooga_windows.zip) | [oobabooga-linux.zip](https://github.com/oobabooga/text-generation-webui/releases/download/installers/oobabooga_linux.zip) |[oobabooga-macos.zip](https://github.com/oobabooga/text-generation-webui/releases/download/installers/oobabooga_macos.zip) | [oobabooga-wsl.zip](https://github.com/oobabooga/text-generation-webui/releases/download/installers/oobabooga_wsl.zip) |
+* [Building Apple Silicon Support for oobabooga text-generation-webui](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
 
-Just download the zip above, extract it, and double-click on "start". The web UI and all its dependencies will be installed in the same folder.
+* [oobabooga macOS Apple Silicon Quick Start for the Impatient](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.md)
 
-* The source codes are here: https://github.com/oobabooga/one-click-installers
-* There is no need to run the installers as admin.
-* AMD doesn't work on Windows.
-* Huge thanks to [@jllllll](https://github.com/jllllll), [@ClayShoaf](https://github.com/ClayShoaf), and [@xNul](https://github.com/xNul) for their contributions to these installers.
-
-### Manual installation using Conda
-
-Recommended if you have some experience with the command line.
-
-#### 0. Install Conda
-
-https://docs.conda.io/en/latest/miniconda.html
-
-On Linux or WSL, it can be automatically installed with these two commands:
-
-```
-curl -sL "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" > "Miniconda3.sh"
-bash Miniconda3.sh
-```
-Source: https://educe-ubc.github.io/conda.html
-
-#### 1. Create a new conda environment
-
-```
-conda create -n textgen python=3.10.9
-conda activate textgen
-```
-
-#### 2. Install Pytorch
-
-| System | GPU | Command |
-|--------|---------|---------|
-| Linux/WSL | NVIDIA | `pip3 install torch torchvision torchaudio` |
-| Linux | AMD | `pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.4.2` |
-| MacOS + MPS (untested) | Any | `pip3 install torch torchvision torchaudio` |
-| Windows | NVIDIA | `pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117` |
-
-The up-to-date commands can be found here: https://pytorch.org/get-started/locally/. 
-
-#### 2.1 Special instructions
-
-* MacOS users: https://github.com/oobabooga/text-generation-webui/pull/393
-* AMD users: https://rentry.org/eq3hg
-
-#### 3. Install the web UI
-
-```
-git clone https://github.com/oobabooga/text-generation-webui
-cd text-generation-webui
-pip install -r requirements.txt
-```
-
-#### bitsandbytes
-
-bitsandbytes >= 0.39 may not work on older NVIDIA GPUs. In that case, to use `--load-in-8bit`, you may have to downgrade like this:
-
-* Linux: `pip install bitsandbytes==0.38.1`
-* Windows: `pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.38.1-py3-none-any.whl`
-
-### Alternative: Docker
-
-```
-ln -s docker/{Dockerfile,docker-compose.yml,.dockerignore} .
-cp docker/.env.example .env
-# Edit .env and set TORCH_CUDA_ARCH_LIST based on your GPU model
-docker compose up --build
-```
-
-* You need to have docker compose v2.17 or higher installed. See [this guide](https://github.com/oobabooga/text-generation-webui/blob/main/docs/Docker.md) for instructions.
-* For additional docker files, check out [this repository](https://github.com/Atinoda/text-generation-webui-docker).
-
-### Updating the requirements
-
-From time to time, the `requirements.txt` changes. To update, use this command:
-
-```
-conda activate textgen
-cd text-generation-webui
-pip install -r requirements.txt --upgrade
-```
 ## Downloading models
 
 Models should be placed inside the `models/` folder.
@@ -161,6 +96,8 @@ For example:
     python download-model.py facebook/opt-1.3b
 
 To download a protected model, set env vars `HF_USER` and `HF_PASS` to your Hugging Face username and password (or [User Access Token](https://huggingface.co/settings/tokens)). The model's terms must first be accepted on the HF website.
+
+**NOTE:** You may want to create symbolic links in the model directory since sometimes there are multiple models downloaded with different quantizations, or on external storage due to space on th edisk where you insatlled this.  If you have external storge, like I do, you can create a link by going to the models directory and creating the link to your model.
 
 #### GGML models
 
@@ -373,7 +310,8 @@ The presets that are included by default are the result of a contest that receiv
 
 ## Community
 
-* Subreddit: https://www.reddit.com/r/oobaboogazz/
+I will be checking in on the oobabooga Discord server at the #mac-setup channel.
+
 * Discord: https://discord.gg/jwZCF2dPQN
 
 ## Credits
