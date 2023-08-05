@@ -1,20 +1,24 @@
-import os
-import warnings
-import cProfile
-
-from modules.logging_colors import logger
-from modules.block_requests import OpenMonkeyPatch, RequestBlocker
-
-os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
-os.environ['BITSANDBYTES_NOWELCOME'] = '1'
-warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
-
-with RequestBlocker():
-    import gradio as gr
-
 import matplotlib
-matplotlib.use('Agg')  # This fixes LaTeX rendering on some systems
-
+from functools import partial
+from pathlib import Path
+from threading import Lock
+from PIL import Image
+from modules import chat, loaders, presets, shared, training, ui, utils
+from modules.block_requests import OpenMonkeyPatch, RequestBlocker
+from modules.extensions import apply_extensions
+from modules.github import clone_or_pull_repository
+from modules.html_generator import chat_html_wrapper
+from modules.logging_colors import logger
+from modules.LoRA import add_lora_to_model
+from modules.models import load_model, unload_model
+from modules.models_settings import (apply_model_settings_to_state,
+                                     get_model_settings_from_yamls,
+                                     save_model_settings,
+                                     update_model_parameters)
+from modules.text_generation import (generate_reply_wrapper,
+                                     get_encoded_length, stop_everything_event)
+from modules.utils import gradio
+import cProfile
 import importlib
 import json
 import math
@@ -23,34 +27,21 @@ import re
 import sys
 import time
 import traceback
-from functools import partial
-from pathlib import Path
-from threading import Lock
-
+import warnings
 import psutil
 import torch
 import yaml
-from PIL import Image
-
 import modules.extensions as extensions_module
-from modules import chat, loaders, presets, shared, training, ui, utils
-from modules.extensions import apply_extensions
-from modules.github import clone_or_pull_repository
-from modules.html_generator import chat_html_wrapper
-from modules.LoRA import add_lora_to_model
-from modules.models import load_model, unload_model
-from modules.models_settings import (
-    apply_model_settings_to_state,
-    get_model_settings_from_yamls,
-    save_model_settings,
-    update_model_parameters
-)
-from modules.text_generation import (
-    generate_reply_wrapper,
-    get_encoded_length,
-    stop_everything_event
-)
-from modules.utils import gradio
+
+os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
+os.environ['BITSANDBYTES_NOWELCOME'] = '1'
+warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
+
+with RequestBlocker():
+    import gradio as gr
+
+matplotlib.use('Agg')  # This fixes LaTeX rendering on some systems
+
 
 
 def load_model_wrapper(selected_model, loader, autoload=False):
@@ -572,6 +563,7 @@ def set_interface_arguments(interface_mode, extensions, bool_active):
     shared.need_restart = True
 
 def shutdown_server(interface_mode, extensions, bool_active):
+    stop_everything_event()
     shared.run_server = False
 
 def create_interface():
@@ -1197,9 +1189,9 @@ def main():
             create_interface()
 
 if __name__ == "__main__":
-    if os.getenv('DEBUG_PROF') == 1:
-        logger.info(f"Profiling activated sending information to outlut.prof")
-        cProfile.run(main(), 'output.prof')
+    if os.getenv('DEBUG_PROF') == "1":
+        logger.info(f"Profiling activated sending information to output.prof")
+        cProfile.run('main()', "outout.prof")
     else:
         main()
 

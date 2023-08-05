@@ -19,7 +19,8 @@ from modules.callbacks import (
 from modules.extensions import apply_extensions
 from modules.html_generator import generate_4chan_html, generate_basic_html
 from modules.logging_colors import logger
-from modules.models import clear_torch_cache, local_rank
+from modules.models import clear_torch_cache
+from modules.ComputeDevice import get_gpu
 
 
 def generate_reply(*args, **kwargs):
@@ -53,13 +54,9 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
 
     if shared.model.__class__.__name__ in ['LlamaCppModel', 'RWKVModel', 'ExllamaModel'] or shared.args.cpu:
         return input_ids
-    elif shared.args.deepspeed:
-        return input_ids.to(device=local_rank)
-    elif torch.backends.mps.is_available():
-        device = torch.device('mps')
-        return input_ids.to(device)
-    else:
-        return input_ids.cuda()
+
+    get_gpu()
+    return gpu.to()
 
 
 def get_encoded_length(prompt):
@@ -124,8 +121,6 @@ def set_manual_seed(seed):
         seed = random.randint(1, 2**31)
 
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
     return seed
 
@@ -246,7 +241,6 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
     # Encode the input
     input_ids = encode(question, add_bos_token=state['add_bos_token'], truncation_length=get_max_prompt_length(state))
     output = input_ids[0]
-    cuda = not any((shared.args.cpu, shared.args.deepspeed))
 
     # Add the encoded tokens to generate_params
     question, input_ids, inputs_embeds = apply_extensions('tokenizer', state, question, input_ids, None)
@@ -277,8 +271,7 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
         if not state['stream']:
             with torch.no_grad():
                 output = shared.model.generate(**generate_params)[0]
-                if cuda:
-                    output = output.cuda()
+                output = output.to()
 
             yield get_reply_from_output_ids(output, input_ids, original_question, state, is_chat=is_chat)
 

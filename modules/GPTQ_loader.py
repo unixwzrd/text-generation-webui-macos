@@ -10,6 +10,7 @@ from transformers import AutoConfig, AutoModelForCausalLM
 
 import modules.shared as shared
 from modules.logging_colors import logger
+from modules.ComputeDevice import gpu_dev
 
 sys.path.insert(0, str(Path("repositories/GPTQ-for-LLaMa")))
 
@@ -171,10 +172,10 @@ def load_quantized(model_name):
         else:
             pre_layer = shared.args.pre_layer
 
-        model = load_quant(str(path_to_model), str(pt_path), shared.args.wbits, shared.args.groupsize, pre_layer)
+        GPTQ_model = load_quant(str(path_to_model), str(pt_path), shared.args.wbits, shared.args.groupsize, pre_layer)
     else:
         threshold = False if model_type == 'gptj' else 128
-        model = load_quant(str(path_to_model), str(pt_path), shared.args.wbits, shared.args.groupsize, kernel_switch_threshold=threshold)
+        GPTQ_model = load_quant(str(path_to_model), str(pt_path), shared.args.wbits, shared.args.groupsize, kernel_switch_threshold=threshold)
 
         # accelerate offload (doesn't work properly)
         if shared.args.gpu_memory or torch.cuda.device_count() > 1:
@@ -187,15 +188,14 @@ def load_quantized(model_name):
 
                 max_memory['cpu'] = f'{max_cpu_memory}GiB' if not re.match('.*ib$', max_cpu_memory.lower()) else max_cpu_memory
             else:
-                max_memory = accelerate.utils.get_balanced_memory(model)
+                max_memory = accelerate.utils.get_balanced_memory(GPTQ_model)
 
-            device_map = accelerate.infer_auto_device_map(model, max_memory=max_memory, no_split_module_classes=["LlamaDecoderLayer"])
+            device_map = accelerate.infer_auto_device_map(GPTQ_model, max_memory=max_memory, no_split_module_classes=["LlamaDecoderLayer"])
             logger.info("Using the following device map for the quantized model:", device_map)
             # https://huggingface.co/docs/accelerate/package_reference/big_modeling#accelerate.dispatch_model
-            model = accelerate.dispatch_model(model, device_map=device_map, offload_buffers=True)
+            GPTQ_model = accelerate.dispatch_model(GPTQ_model, device_map=device_map, offload_buffers=True)
 
-        # No offload
-        elif not shared.args.cpu:
-            model = model.to(torch.device('cuda:0'))
+        gpu = gpu_dev()
+        GPTQ_model = GPTQ_model.to(gpu)
 
-    return model
+    return GPTQ_model

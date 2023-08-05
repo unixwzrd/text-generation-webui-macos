@@ -10,6 +10,78 @@ import unittest
 import modules.shared as shared
 from modules.logging_colors import logger
 
+
+def gpu_available():
+    '''
+    Sets and returns the default torch.device object accordng to which deecices are available
+    on th emacnine. This will be the device used in context for any tensor operatuoins done
+    without providing an dexplicit device index or number.  This device number only applies to
+    CUDA devices and not MPS.
+    
+    Returns True for suda and mps
+            False for cpu
+    '''
+    return get_gpu()[0]
+
+
+def gpu_dev():
+    '''
+    Sets the default compute device for GPU acceleration.
+    
+    Returns torch.device object as cuda, mps, or cpu
+    '''
+    return get_gpu()[1]
+
+
+def get_gpu():
+    '''
+    Checks for GPU acceleration with either cuda or mps, will fallback to cpu
+
+    This should only really need to be called once. But will get called for every time
+    we check to see if there is an active GPU device. When this gets moved into a ComputeDevice
+    class, we can take care of this as class variables and methods.
+    
+    Returns a tuple (has_gpu, gpu_dev)
+        has_gou: true if cuda or mps is available
+        gpu_dev: the device found for compute
+    '''
+    # We don't *HAVE* to set a local rank index for each compute device, but it doesn't
+    # hurt anything of we do. This is mostly for CUDA and distributed setup.
+    local_rank = get_local_rank()
+    if torch.cuda.is_available():
+        logger.info("Using CUDA GPU Acceleration for Torch Device")
+        # torch.cuda.set_device(local_rank)
+        return True, torch.device("cuda", local_rank)
+    elif torch.backends.mps.is_available():
+        logger.info("Using MPS GPU Acceleration for Torch Device")
+        return True, torch.device("mps", local_rank)
+    else:
+        logger.warning("CPU only! No GPU acceleration available.  Possible performance impact.")
+        return False, torch.device("cpu", local_rank)
+
+
+def clear_gpu_cache():
+    '''
+    This clears the cache for the default torch device
+    Less than optimal, but should do for now.
+    '''
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    elif torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+
+
+def get_local_rank():
+    '''
+    Get local renk is assigned in config or as environment variable.
+    '''
+    try:
+        local_rank = shared.args.local_rank
+    except TypeError:
+        local_rank = int(os.getenv("LOCAL_RANK", "0"))
+    return local_rank
+
+
 class ComputeDevice:
     '''
     Keep a list of all instances so we can use class methods for operating on all of them at once, like resetting, re-initiailixzing or anything else we might wat to do.
@@ -32,9 +104,6 @@ class ComputeDevice:
         self.gpu_memory = None
         self.cpu_memory = None
         # Calculate memory
-        self.total_mem = self.calculate_memory()
-        # Call the methods to set the device and memory attributes
-        self.select_device()
         self.calculate_memory()
 
     @classmethod
@@ -79,7 +148,6 @@ class ComputeDevice:
         Is identical to: torch.device('cuda', 0)
 
         '''
-        local_rank = self.get_local_rank()
         if torch.cuda.is_available():
             return 'cuda'
         elif torch.backends.mps.is_available():
@@ -87,40 +155,42 @@ class ComputeDevice:
         else:
             return 'cpu'
 
-    def calculate_memory(self):
+    @classmethod
+    def calculate_memory(cls):
         '''
         Perform all memory calculations to determine total system memory, total GPU memory, and CPU memory available for use by the application.  Some of these are adjusted by amounts for reservations specified in the config files.
         '''
-        self.system_memory = math.floor(psutil.virtual_memory().total / (1024 * 1024))
+        cls.system_memory = math.floor(psutil.virtual_memory().total / (1024 * 1024))
 
         # Check for MPS, CUDA, or CPU and calculate total memory accordingly
         if torch.backends.mps.is_available():
-            self.gpu_memory = [self.system_memory]
+            cls.gpu_memory = [cls.system_memory]
         elif torch.cuda.is_available():
-            self.gpu_memory = [math.floor(torch.cuda.get_device_properties(i).total_memory / (1024 * 1024)) for i in range(torch.cuda.device_count())]
+            cls.gpu_memory = [math.floor(torch.cuda.get_device_properties(i).total_memory / (1024 * 1024)) for i in range(torch.cuda.device_count())]
         else:
-            self.gpu_memory = [self.system_memory]
+            cls.gpu_memory = [cls.system_memory]
 
         # Calculate default reserved GPU memory
-        self.default_gpu_mem = []
+        cls.default_gpu_mem = []
         if shared.args.gpu_memory is not None and len(shared.args.gpu_memory) > 0:
             for i in shared.args.gpu_memory:
                 if 'mib' in i.lower():
-                    self.default_gpu_mem.append(int(re.sub('[a-zA-Z ]', '', i)))
+                    cls.default_gpu_mem.append(int(re.sub('[a-zA-Z ]', '', i)))
                 else:
-                    self.default_gpu_mem.append(int(re.sub('[a-zA-Z ]', '', i)) * 1000)
-        while len(self.default_gpu_mem) < len(self.gpu_memory):
-            self.default_gpu_mem.append(0)
+                    cls.default_gpu_mem.append(int(re.sub('[a-zA-Z ]', '', i)) * 1000)
+        while len(cls.default_gpu_mem) < len(cls.gpu_memory):
+            cls.default_gpu_mem.append(0)
 
         # Calculate default reserved CPU memory
         if shared.args.cpu_memory is not None:
-            self.cpu_memory = int(re.sub('[a-zA-Z ]', '', shared.args.cpu_memory))
+            cls.cpu_reserved_memory = int(re.sub('[a-zA-Z ]', '', shared.args.cpu_memory))
         else:
-            self.cpu_memory = 0
+            cls.cpu_reserved_memory = 0
 
         # Calculate the total available memory for the application
-        self.total_mem = [gm - dgm for gm, dgm in zip(self.gpu_memory, self.default_gpu_mem)]
-        self.total_mem.append(self.system_memory - self.cpu_memory)
+        cls.total_mem = [gm - dgm for gm, dgm in zip(cls.gpu_memory, cls.default_gpu_mem)]
+        cls.total_mem.append(cls.system_memory - cls.cpu_memory)
+        
 
 
 

@@ -10,6 +10,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from modules import shared
 from modules.logging_colors import logger
+from modules.ComputeDevice import get_gpu
 
 
 class LlamacppHF(PreTrainedModel):
@@ -30,7 +31,7 @@ class LlamacppHF(PreTrainedModel):
 
     @property
     def device(self) -> torch.device:
-        return torch.device(0)
+        return get_gpu()
 
     def __call__(self, *args, **kwargs):
         # TODO: Some decoding methods (such as Contrastive Search) may not work at this time
