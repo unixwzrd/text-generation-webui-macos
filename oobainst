@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Load default environment variables if the defaults file exists. Shoudl
+# part of th einstallation package, but later copied to .env.local if the
+# user would like to customize locations, names, etc for their environment.
+# Load user overrides for environment varianbles. Set reasonable defaults
+# if none are set. Source in the oobabooga .env.local file
+[ -e "$PWD/.env.defaults" ] && source $PWD/.env.defaults 
+[ -e "$PWD/.env.local" ] && source $PWD/.env.local 
+[ -e "$PWD/text-generation-webui/.env.local" ] && \
+    source $PWD/text-generation-webui/.env.local
+
+
+_confirm_yn(){
+    # This is a function to confirm a Yes or No answer from the uset
+    # and determine is they wish to continue or not. On a negative response,
+    # this will exit with a return code of 1.
+    # TODO Might be noce to pass different return codes as a second parameter.
+    echo -e "$1"
+    
+    echo -n "Do you wish to continue? [Y|N]: "
+    read -n 1 -r response
+    echo ""
+
+    if [[ ! $response =~ ^[Yy]$ ]]; then 
+        echo -e "Exiting.\n"
+        exit 1
+    fi
+}
+
+# M Series or Intel - uname and arch give incorrect responses if run
+# inside Rosetta or other Intel environment like VSCode, sysctl better.
+KERNEL_ARCH=$(sysctl -n kern.version)
+case "${KERNEL_ARCH}" in
+    *X86_64*)   OS_ARCH="x86_64";;
+    *ARM64*)    OS_ARCH="arm64";;
+    *)          echo "Unknown system architecture: ${KERNEL_ARCH}! This script runs only on x86_64 or arm64" && exit
+esac
+
+# Check to see if base CPU architecture is consistent with current
+# environment, Give the user a chance to proceed or not.
+if [ "$OS_ARCH" != "$(uname -m)" ]; then
+   _confirm_yn '\nWARNING: The kernel string, \"arch\" and \"uname -m\" do not agree.\n\nIt seems you are running this in Rosetta, VSCode Terminal, or Intel virtual\nmachine with incorrect or conflicting architecture. This \nmay result in mixed or unintended binary architectures when compiling\nfrom source code.\n'
+fi
+
+
+# Begin th einstallation.
+if [ -e ${HOME}/.conda ]; then
+   _confirm_yn 
+
+fi
+
+curl  https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o miniconda.sh
+
+# (if necessary) install git and conda into a contained environment
+# download miniconda
+if [ ! -e "${CONDA_PYTHON_EXE}" ]; then
+    MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-MacOSX-${OS_ARCH}.sh"
+    echo "Downloading Miniconda from $CONDA_PREFIX to $INSTALL_DIR/miniconda_installer.sh"
+
+    mkdir -p "$CONDA_PREFIX"
+    curl -Lk "$MINICONDA_URL" > "$CONDA_PREFIX/miniconda_installer.sh"
+
+    chmod u+x "$CONDA_PREFIX/miniconda_installer.sh"
+    bash "$INSTALL_DIR/miniconda_installer.sh" -b -p $CONDA_ROOT
+
+    # test the conda binary
+    echo "Miniconda version:"
+    "$CONDA_ROOT/bin/conda" --version
+fi
+
+# create the installer env
+if [ ! -e "$CONDA_PREFIX" ]; then
+    "$CONDA_ROOT/bin/conda" create -y -k --prefix "$CONDA_PREFIX" python=3.10
+fi
+
+# check if conda environment was actually created
+if [ ! -e "$CONDA_PREFIX/bin/python" ]; then
+    echo "Conda environment is empty."
+    exit
+fi
+
+# environment isolation
+unset PYTHONPATH
+unset PYTHONHOME
+
+export PYTHONNOUSERSITE=1
+export CUDA_PATH="$CONDA_PREFIX"
+export CUDA_HOME="$CUDA_PATH"
+
+# activate installer env
+source "$CONDA_ROOT/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
+conda activate "$CONDA_DEFAULT_ENV"
+
+conda info --envs
+env | sort | grep -i pyth
+
+exit
+
+# setup installer env
+python ./webui.py

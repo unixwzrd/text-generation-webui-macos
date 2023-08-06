@@ -36,9 +36,9 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
       - [AutoGPTQ](#autogptq)
       - [ExLlama](#exllama)
       - [GPTQ-for-LLaMa](#gptq-for-llama)
-      - [FlexGen](#flexgen)
       - [DeepSpeed](#deepspeed)
       - [RWKV](#rwkv)
+      - [RoPE (for llama.cpp and ExLlama only)](#rope-for-llamacpp-and-exllama-only)
       - [Gradio](#gradio)
       - [API](#api)
       - [Multimodal](#multimodal)
@@ -46,7 +46,6 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
   - [Contributing](#contributing)
   - [Community](#community)
   - [Credits](#credits)
-
 
 ## Features
 
@@ -56,7 +55,7 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
 * LoRA: load and unload LoRAs on the fly, load multiple LoRAs at the same time, train a new LoRA
 * Precise instruction templates for chat mode, including Alpaca, Vicuna, Open Assistant, Dolly, Koala, ChatGLM, MOSS, RWKV-Raven, Galactica, StableLM, WizardLM, Baize, Ziya, Chinese-Vicuna, MPT, INCITE, Wizard Mega, KoAlpaca, Vigogne, Bactrian, h2o, and OpenBuddy
 * [Multimodal pipelines, including LLaVA and MiniGPT-4](https://github.com/oobabooga/text-generation-webui/tree/main/extensions/multimodal)
-* 8-bit and 4-bit inference through bitsandbytes **CPU only mode for macOS, bitsandbytes does not support Apple Silicon M1/M2 processors**
+* 8-bit and 4-bit inference through bitsandbytes **CPU only mode for macOS, bitsandbytes does not support Apple Silicon GPU**
 * CPU mode for transformers models
 * [DeepSpeed ZeRO-3 inference](docs/DeepSpeed.md)
 * [Extensions](docs/Extensions.md)
@@ -165,7 +164,7 @@ Optionally, you can use the following command-line flags:
 
 | Flag                                       | Description |
 |--------------------------------------------|-------------|
-| `--loader LOADER`                          | Choose the model loader manually, otherwise, it will get autodetected. Valid options: transformers, autogptq, gptq-for-llama, exllama, exllama_hf, llamacpp, rwkv, flexgen |
+| `--loader LOADER`                          | Choose the model loader manually, otherwise, it will get autodetected. Valid options: transformers, autogptq, gptq-for-llama, exllama, exllama_hf, llamacpp, rwkv |
 
 #### Accelerate/transformers
 
@@ -203,8 +202,8 @@ Optionally, you can use the following command-line flags:
 | `--n_batch` | Maximum number of prompt tokens to batch together when calling llama_eval. |
 | `--no-mmap` | Prevent mmap from being used. |
 | `--mlock`   | Force the system to keep the model in RAM. |
-| `--cache-capacity CACHE_CAPACITY`   | Maximum cache capacity. Examples: 2000MiB, 2GiB. When provided without units, bytes will be assumed. |
-| `--n-gpu-layers N_GPU_LAYERS` | Number of layers to offload to the GPU. Only works if llama-cpp-python was compiled with BLAS. Set this to 1000000000 to offload all layers to the GPU. |
+| `--cache-capacity CACHE_CAPACITY`   | Maximum cache capacity. Examples: 2000MiB, 2GiB. When provided without units, bytes will be assumed. Does not apply for Apple Silicon GPU since it uses unified memory. |
+| `--n-gpu-layers N_GPU_LAYERS` | Number of layers to offload to the GPU. Only works if llama-cpp-python was compiled with Apple Silicon GPU Support for BLAS and llama-cpp using Metal. Load the model and look for **llama_model_load_internal: n_layer in ths STDERR and this will show you the number of layers in the model. Set this value to that number or possibly n + 2, This si very sensitive now an will overrun your data area or tensor cache causing a segmentation fault. |
 | `--n_ctx N_CTX` | Size of the prompt context. |
 | `--llama_cpp_seed SEED` | Seed for llama-cpp models. Default 0 (random). |
 | `--n_gqa N_GQA`         | grouped-query attention. Must be 8 for llama2 70b. |
@@ -226,8 +225,6 @@ Optionally, you can use the following command-line flags:
 |------------------|-------------|
 |`--gpu-split`     | Comma-separated list of VRAM (in GB) to use per GPU device for model layers, e.g. `20,7,7` |
 |`--max_seq_len MAX_SEQ_LEN`           | Maximum sequence length. |
-|`--compress_pos_emb COMPRESS_POS_EMB` | Positional embeddings compression factor. Should typically be set to max_seq_len / 2048. |
-|`--alpha_value ALPHA_VALUE`           | Positional embeddings alpha factor for NTK RoPE scaling. Same as above. Use either this or compress_pos_emb, not both. `
 
 #### GPTQ-for-LLaMa
 
@@ -243,14 +240,6 @@ Optionally, you can use the following command-line flags:
 | `--warmup_autotune`    | (triton) Enable warmup autotune. |
 | `--fused_mlp`          | (triton) Enable fused mlp. |
 
-#### FlexGen
-
-| Flag             | Description |
-|------------------|-------------|
-| `--percent PERCENT [PERCENT ...]` | FlexGen: allocation percentages. Must be 6 numbers separated by spaces (default: 0, 100, 100, 0, 100, 0). |
-| `--compress-weight`               | FlexGen: Whether to compress weight (default: False).|
-| `--pin-weight [PIN_WEIGHT]`       | FlexGen: whether to pin weights (setting this to False reduces CPU memory by 20%). |
-
 #### DeepSpeed
 
 | Flag                                  | Description |
@@ -265,6 +254,13 @@ Optionally, you can use the following command-line flags:
 |---------------------------------|-------------|
 | `--rwkv-strategy RWKV_STRATEGY` | RWKV: The strategy to use while loading the model. Examples: "cpu fp32", "cuda fp16", "cuda fp16i8". |
 | `--rwkv-cuda-on`                | RWKV: Compile the CUDA kernel for better performance. |
+
+#### RoPE (for llama.cpp and ExLlama only)
+
+| Flag             | Description |
+|------------------|-------------|
+|`--compress_pos_emb COMPRESS_POS_EMB` | Positional embeddings compression factor. Should typically be set to max_seq_len / 2048. |
+|`--alpha_value ALPHA_VALUE`           | Positional embeddings alpha factor for NTK RoPE scaling. Scaling is not identical to embedding compression. Use either this or compress_pos_emb, not both. |
 
 #### Gradio
 
@@ -292,8 +288,6 @@ Optionally, you can use the following command-line flags:
 | Flag                                  | Description |
 |---------------------------------------|-------------|
 | `--multimodal-pipeline PIPELINE`      | The multimodal pipeline to use. Examples: `llava-7b`, `llava-13b`. |
-
-Out of memory errors? [Check the low VRAM guide](docs/Low-VRAM-guide.md).
 
 ## Presets
 
