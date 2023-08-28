@@ -11,7 +11,7 @@ import modules.shared as shared
 from modules.logging_colors import logger
 
 
-def gpu_available():
+def has_gpu():
     '''
     Sets and returns the default torch.device object accordng to which deecices are available
     on th emacnine. This will be the device used in context for any tensor operatuoins done

@@ -17,6 +17,12 @@ from modules.models_settings import (apply_model_settings_to_state,
                                      update_model_parameters)
 from modules.text_generation import (generate_reply_wrapper,
                                      get_encoded_length, stop_everything_event)
+from modules.models_settings import (apply_model_settings_to_state,
+                                     get_model_settings_from_yamls,
+                                     save_model_settings,
+                                     update_model_parameters)
+from modules.text_generation import (generate_reply_wrapper,
+                                     get_encoded_length, stop_everything_event)
 from modules.utils import gradio
 import cProfile
 import importlib
@@ -1191,7 +1197,6 @@ def main():
 if __name__ == "__main__":
     if os.getenv('DEBUG_PROF') == "1":
         logger.info(f"Profiling activated sending information to output.prof")
-        cProfile.run('main()', "outout.prof")
+        cProfile.run('main()', "output.prof")
     else:
         main()
-
