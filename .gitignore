@@ -38,3 +38,8 @@ Thumbs.db
 *.swp
 .*.un~
 *.prof
+
+# Coming soon
+.env.local
+oobainst
+.env.local

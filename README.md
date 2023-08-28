@@ -1,6 +1,26 @@
-# OLD VERSION - 1.3.1 Patched for macOS and Apple Silicon
+# MERGED 1.5 Version.  THIS IS A DEVELOPMENT VERSION
 
-Patched and working with macOS and Apple Silicon M1/M2 GPU now.
+This is a development version and I have not added many changes I had planned. Please feel free to use at your own risk as there may be bugs not yet found.
+
+Items Added to this version.
+ * "Stop Server" under the sessions tab. Use with caution if in multi-user, will probably disable this if in multi-user mode, however it offers better shutdown than just killing the process on the server.
+ * Added Python Class for handling diverse GPU/Compute devices like CUDA, CPU or MPS Changed code to use "torch device" once set initially to a device. Will fall back to CPU.
+
+Items working and tested on macOS
+ * More support for Apple Silicon M1/M2 processors.
+ * Working with new llama-cpp-python 0.1.81
+ * Works with LLaMa2 Models
+    * There GGML models will need conversion to GGUF format if using llama-cpp-python 0.1.81.
+    * Earlier version llama-coo-python still works
+    * Have not concluded testing of library dependencies, will have that updated in build instructions for oobagooba-macOS.
+    * Still mainly supporting GGML, now GGUF, GG-Universal Format files. You will have to convert your GGML files to GGUF format.
+
+Removed from this
+ * Tried to continue what was already started in removing FlexGEN from the repo.
+ * Removed Docker - if someone wants to help maintain for macOS, let me know.
+ * SLowly removing information on CUDA as it is not relevant to macOS.
+
+  **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.md) and the longer [Building Apple Silicon Support](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.md)
 
 GGML support is in this release, and has not been extensively tested. From the look of upstream commits, there are some changes which must be made before this will work with Llama2 models.
 
@@ -13,7 +33,7 @@ Otherwise, use these instructions I have on putting together the macOS Python en
 
 I will be updating this README file with new information specifically regarding macOS and Apple Silicon.
 
-I would like to work closely with the oobaboogs team and try to implement simkilar solutions so the web UI can have a similar look and feel.
+I would like to work closely with the oobabooga team and try to implement similar solutions so the web UI can have a similar look and feel.
 
 Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can Buy Me a Coffee, sponsor this project, or consider me for job opportunities.
 
@@ -21,7 +41,7 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
-- [OLD VERSION - 1.3.1 Patched for macOS and Apple Silicon](#old-version---131-patched-for-macos-and-apple-silicon)
+- [MERGED 1.5 Version.  THIS IS A DEVELOPMENT VERSION](#merged-15-version--this-is-a-development-version)
   - [Features](#features)
   - [Installation](#installation)
   - [Downloading models](#downloading-models)
