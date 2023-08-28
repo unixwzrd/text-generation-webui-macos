@@ -39,54 +39,32 @@ esac
 
 # Check to see if base CPU architecture is consistent with current
 # environment, Give the user a chance to proceed or not.
+#
 if [ "$OS_ARCH" != "$(uname -m)" ]; then
    _confirm_yn '\nWARNING: The kernel string, \"arch\" and \"uname -m\" do not agree.\n\nIt seems you are running this in Rosetta, VSCode Terminal, or Intel virtual\nmachine with incorrect or conflicting architecture. This \nmay result in mixed or unintended binary architectures when compiling\nfrom source code.\n'
 fi
 
-
-# Begin th einstallation.
+# Installs Miniconda3 py311_23.5.2-0
+# 
+# -b           run install in batch mode (without manual intervention),
+#              it is expected the license terms (if any) are agreed upon
+# -f           no error if install prefix already exists
+# -h           print this help message and exit
+# -p PREFIX    install prefix, defaults to /Users/unixwzrd/miniconda3, must not contain spaces.
+# -s           skip running pre/post-link/install scripts
+# -u           update an existing installation
+# -t           run package tests after installation (may install conda-build)
+#
 if [ -e ${HOME}/.conda ]; then
-   _confirm_yn 
-
+   _confirm_yn 'It looks like you have an existing conda installation. Continuing this may\naffect your existing venvs.\n\nDo you wish to cintunue thi sinstall with Conda?' || \
+    (
+        echo -e "CONDA INSTALLS HERE"
+#        curl  https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh \
+#           ${CONDA_OPTS} -o miniconda.sh
+        sh miniconda.sh
+    )
 fi
 
-curl  https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o miniconda.sh
-
-# (if necessary) install git and conda into a contained environment
-# download miniconda
-if [ ! -e "${CONDA_PYTHON_EXE}" ]; then
-    MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-MacOSX-${OS_ARCH}.sh"
-    echo "Downloading Miniconda from $CONDA_PREFIX to $INSTALL_DIR/miniconda_installer.sh"
-
-    mkdir -p "$CONDA_PREFIX"
-    curl -Lk "$MINICONDA_URL" > "$CONDA_PREFIX/miniconda_installer.sh"
-
-    chmod u+x "$CONDA_PREFIX/miniconda_installer.sh"
-    bash "$INSTALL_DIR/miniconda_installer.sh" -b -p $CONDA_ROOT
-
-    # test the conda binary
-    echo "Miniconda version:"
-    "$CONDA_ROOT/bin/conda" --version
-fi
-
-# create the installer env
-if [ ! -e "$CONDA_PREFIX" ]; then
-    "$CONDA_ROOT/bin/conda" create -y -k --prefix "$CONDA_PREFIX" python=3.10
-fi
-
-# check if conda environment was actually created
-if [ ! -e "$CONDA_PREFIX/bin/python" ]; then
-    echo "Conda environment is empty."
-    exit
-fi
-
-# environment isolation
-unset PYTHONPATH
-unset PYTHONHOME
-
-export PYTHONNOUSERSITE=1
-export CUDA_PATH="$CONDA_PREFIX"
-export CUDA_HOME="$CUDA_PATH"
 
 # activate installer env
 source "$CONDA_ROOT/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
