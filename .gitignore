@@ -42,4 +42,7 @@ Thumbs.db
 # Coming soon
 .env.local
 oobainst
+<<<<<<< Updated upstream
 .env.local
+=======
+>>>>>>> Stashed changes
