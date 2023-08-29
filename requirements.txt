@@ -1,6 +1,7 @@
 accelerate==0.21.0
 colorama
 datasets
+ctransformers
 einops
 fastapi==0.100.0
 flexgen==0.1.7
