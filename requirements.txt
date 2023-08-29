@@ -1,5 +1,6 @@
 accelerate==0.21.0
 colorama
+ctransformers
 datasets
 einops
 fastapi==0.100.0
