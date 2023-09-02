@@ -26,6 +26,8 @@ def infer_loader(model_name):
         loader = 'AutoGPTQ'
     elif len(list(path_to_model.glob('*ggml*.bin'))) > 0:
         loader = 'llama.cpp'
+    elif re.match('.*gguf.*\.bin', model_name.lower()):
+        loader = 'llama.cpp'
     elif re.match('.*ggml.*\.bin', model_name.lower()):
         loader = 'llama.cpp'
     elif re.match('.*rwkv.*\.pth', model_name.lower()):
