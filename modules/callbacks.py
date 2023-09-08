@@ -7,6 +7,7 @@ import torch
 import transformers
 
 import modules.shared as shared
+from modules.ComputeDevice import clear_gpu_cache
 
 
 class _StopEverythingStoppingCriteria(transformers.StoppingCriteria):
@@ -90,5 +91,4 @@ class Iteratorize:
 
 def clear_torch_cache():
     gc.collect()
-    if not shared.args.cpu:
-        torch.cuda.empty_cache()
+    clear_gpu_cache()

@@ -9,6 +9,7 @@ from transformers.generation.logits_process import (
     LogitsProcessorList,
     TemperatureLogitsWarper
 )
+from modules.ComputeDevice import get_gpu
 
 
 class TailFreeLogitsWarper(LogitsWarper):
@@ -106,7 +107,8 @@ class MirostatLogitsWarper(LogitsWarper):
         # Normalize the probabilities of the remaining words
         prob_topk = torch.softmax(sorted_logits, dim=0)
 
-        prev_i = torch.multinomial(prob_topk, num_samples=1, replacement=True).to('cuda')
+        gpu_dev = get_gpu()
+        prev_i = torch.multinomial(prob_topk, num_samples=1, replacement=True).to(gpu_dev)
 
         observed_surprise = -math.log2(prob_topk[prev_i])
         self.e = observed_surprise - self.mirostat_tau

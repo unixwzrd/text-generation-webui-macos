@@ -7,6 +7,7 @@ from tokenizers import Tokenizer
 
 import modules.shared as shared
 from modules.callbacks import Iteratorize
+from modules.ComputeDevice import gpu_dev
 
 np.set_printoptions(precision=4, suppress=True, linewidth=200)
 
