@@ -15,7 +15,7 @@ torch._C._jit_set_profiling_mode(False)
 
 params = {
     'activate': True,
-    'speaker': 'en_56',
+    'speaker': 'en_92',
     'language': 'en',
     'model_id': 'v3_en',
     'sample_rate': 48000,
@@ -41,23 +41,27 @@ table = str.maketrans({
     '"': "&quot;",
 })
 
+_silero_tts_model = None
+
 
 def xmlesc(txt):
     return txt.translate(table)
 
 
 def load_model():
+    global _silero_tts_model
+
     torch_cache_path = torch.hub.get_dir() if params['local_cache_path'] == '' else params['local_cache_path']
     model_path = torch_cache_path + "/snakers4_silero-models_master/src/silero/model/" + params['model_id'] + ".pt"
     if Path(model_path).is_file():
         print(f'\nUsing Silero TTS cached checkpoint found at {torch_cache_path}')
-        tts_model, example_text = torch.hub.load(repo_or_dir=torch_cache_path + '/snakers4_silero-models_master/', model='silero_tts', language=params['language'], speaker=params['model_id'], source='local', path=model_path, force_reload=True)
+        _silero_tts_model, example_text = torch.hub.load(repo_or_dir=torch_cache_path + '/snakers4_silero-models_master/', model='silero_tts', language=params['language'], speaker=params['model_id'], source='local', path=model_path, force_reload=True)
     else:
         print(f'\nSilero TTS cache not found at {torch_cache_path}. Attempting to download...')
-        tts_model, example_text = torch.hub.load(repo_or_dir='snakers4/silero-models', model='silero_tts', language=params['language'], speaker=params['model_id'])
+        _silero_tts_model, example_text = torch.hub.load(repo_or_dir='snakers4/silero-models', model='silero_tts', language=params['language'], speaker=params['model_id'])
 
-    tts_model.to(gpu_dev())
-    return tts_model
+    _silero_tts_model.to(gpu_dev())
+    return _silero_tts_model
 
 
 def remove_tts_from_history(history):
@@ -108,10 +112,11 @@ def history_modifier(history):
 
 
 def output_modifier(string, state):
-    global tts_model, current_params, streaming_state
+    global _silero_tts_model, current_params, streaming_state
+
     for i in params:
         if params[i] != current_params[i]:
-            tts_model = load_model()
+            _silero_tts_model = load_model()
             current_params = params.copy()
             break
 
@@ -127,7 +132,7 @@ def output_modifier(string, state):
         output_file = Path(f'extensions/silero_tts/outputs/{state["character_menu"]}_{int(time.time())}.wav')
         prosody = '<prosody rate="{}" pitch="{}">'.format(params['voice_speed'], params['voice_pitch'])
         silero_input = f'<speak>{prosody}{xmlesc(string)}</prosody></speak>'
-        tts_model.save_wav(ssml_text=silero_input, speaker=params['speaker'], sample_rate=int(params['sample_rate']), audio_path=str(output_file))
+        _silero_tts_model.save_wav(ssml_text=silero_input, speaker=params['speaker'], sample_rate=int(params['sample_rate']), audio_path=str(output_file))
 
         autoplay = 'autoplay' if params['autoplay'] else ''
         string = f'<audio src="file/{output_file.as_posix()}" controls {autoplay}></audio>'
@@ -139,8 +144,9 @@ def output_modifier(string, state):
 
 
 def setup():
-    global tts_model
-    tts_model = load_model()
+    global _silero_tts_model
+
+    _silero_tts_model = load_model()
 
 
 def ui():

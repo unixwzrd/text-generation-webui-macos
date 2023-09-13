@@ -87,8 +87,9 @@ class ComputeDevice:
     Keep a list of all instances so we can use class methods for operating on all of them at once, like resetting, re-initiailixzing or anything else we might wat to do.
     '''
     devices = []
+    available_indices = set()  # New
 
-    def __init__(self, device_type=None):
+    def __init__(self, device_type=None, explicit_index=None):
         if device_type and ':' in device_type:
             self.device_type, self.local_rank = device_type.split(':')
             self.local_rank = int(self.local_rank)
@@ -96,7 +97,10 @@ class ComputeDevice:
             self.device_type = device_type if device_type else self.select_device()
             self.local_rank = self.get_local_rank()
 
-        self.device = torch.device(self.device_type, self.local_rank)
+        # New: Use the explicit_index if provided, otherwise allocate a new index
+        self.device_index = explicit_index if explicit_index is not None else self.allocate_index()
+
+        self.device = torch.device(f"{self.device_type}:{self.device_index}")
         ComputeDevice.devices.append(self)
 
         # Initialize memory attributes
@@ -106,13 +110,18 @@ class ComputeDevice:
         # Calculate memory
         self.calculate_memory()
 
+
+    def allocate_index(self):
+        if len(ComputeDevice.available_indices) > 0:
+            return min(ComputeDevice.available_indices)
+        else:
+            return len(ComputeDevice.devices)
+
+
     @classmethod
-    def clear_all_cache(cls):
-        '''
-        This frees all cache space used by every device of ComputeDevice class we have created.
-        '''
-        for device in cls.devices:
-            device.clear_cache()
+    def release_index(cls, index):
+        cls.available_indices.add(index)
+
 
     def clear_cache(self):
         '''
@@ -123,8 +132,18 @@ class ComputeDevice:
         elif self.device_type == 'mps':
             torch.mps.empty_cache()
 
-        # Remove the device from the list
+        # Remove the device from the list and release its index
         ComputeDevice.devices.remove(self)
+        ComputeDevice.release_index(self.device_index)  # New
+
+    
+    def clear_all_cache(cls):
+        '''
+        This frees all cache space used by every device of ComputeDevice class we have created.
+        '''
+        for device in cls.devices:
+            device.clear_cache()
+
 
     def get_local_rank(self):
         '''
@@ -135,6 +154,7 @@ class ComputeDevice:
         except TypeError:
             local_rank = int(os.getenv("LOCAL_RANK", "0"))
         return local_rank
+
 
     def select_device(self):
         '''
@@ -154,6 +174,7 @@ class ComputeDevice:
             return 'mps'
         else:
             return 'cpu'
+
 
     @classmethod
     def calculate_memory(cls):

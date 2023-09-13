@@ -22,6 +22,8 @@ voices = None
 wav_idx = 0
 LANG_MODELS = ['eleven_monolingual_v1', 'eleven_multilingual_v1']
 
+_elevenlabs_tts_model = None
+
 
 def update_api_key(key):
     params['api_key'] = key
@@ -133,7 +135,7 @@ def output_modifier(string, state):
 
 
 def ui():
-    global voices
+    global _elevenlabs_tts_model, voices
     if not voices:
         voices = refresh_voices()
         selected = params['selected_voice']
@@ -161,7 +163,7 @@ def ui():
             api_key = gr.Textbox(placeholder="Enter your API key.", label='API Key')
 
     with gr.Row():
-        tts_model = gr.Dropdown(value=params['model'], choices=LANG_MODELS, label='Language model')
+        _elevenlabs_tts_model = gr.Dropdown(value=params['model'], choices=LANG_MODELS, label='Language model')
 
     with gr.Row():
         convert = gr.Button('Permanently replace audios with the message texts')
@@ -191,7 +193,7 @@ def ui():
     activate.change(lambda x: params.update({'activate': x}), activate, None)
     voice.change(lambda x: params.update({'selected_voice': x}), voice, None)
     api_key.change(update_api_key, api_key, None)
-    tts_model.change(lambda x: params.update({'model': x}), tts_model, None)
+    _elevenlabs_tts_model.change(lambda x: params.update({'model': x}), _elevenlabs_tts_model, None)
     # connect.click(check_valid_api, [], connection_status)
     refresh.click(refresh_voices_dd, [], voice)
     # Event functions to update the parameters in the backend
