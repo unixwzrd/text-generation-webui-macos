@@ -21,6 +21,7 @@ import modules.shared as shared
 from modules import llama_attn_hijack, sampler_hijack
 from modules.logging_colors import logger
 from modules.models_settings import infer_loader
+from modules.ComputeDevice import get_gpu, has_gpu
 
 transformers.logging.set_verbosity_error()
 
@@ -35,9 +36,8 @@ if shared.args.deepspeed:
     from modules.deepspeed_parameters import generate_ds_config
 
     # Distributed setup
-    local_rank = shared.args.local_rank if shared.args.local_rank is not None else int(os.getenv("LOCAL_RANK", "0"))
+    gpu_dev = get_gpu()
     world_size = int(os.getenv("WORLD_SIZE", "1"))
-    torch.cuda.set_device(local_rank)
     deepspeed.init_distributed()
     ds_config = generate_ds_config(shared.args.bf16, 1 * world_size, shared.args.nvme_offload_dir)
     dschf = HfDeepSpeedConfig(ds_config)  # Keep this object alive for the Transformers integration
@@ -78,24 +78,24 @@ def load_model(model_name, loader=None):
     shared.args.loader = loader
     output = load_func_map[loader](model_name)
     if type(output) is tuple:
-        model, tokenizer = output
+        lcl_model, lcl_tokenizer = output
     else:
-        model = output
-        if model is None:
+        lcl_model = output
+        if lcl_model is None:
             return None, None
         else:
-            tokenizer = load_tokenizer(model_name, model)
+            lcl_tokenizer = load_tokenizer(model_name, lcl_tokenizer)
 
     # Hijack attention with xformers
     if any((shared.args.xformers, shared.args.sdp_attention)):
         llama_attn_hijack.hijack_llama_attention()
 
     logger.info(f"Loaded the model in {(time.time()-t0):.2f} seconds.\n")
-    return model, tokenizer
+    return lcl_model, lcl_tokenizer
 
 
-def load_tokenizer(model_name, model):
-    tokenizer = None
+def load_tokenizer(model_name, tokenizer):
+    #tokenizer = None
     path_to_model = Path(f"{shared.args.model_dir}/{model_name}/")
     if any(s in model_name.lower() for s in ['gpt-4chan', 'gpt4chan']) and Path(f"{shared.args.model_dir}/gpt-j-6B/").exists():
         tokenizer = AutoTokenizer.from_pretrained(Path(f"{shared.args.model_dir}/gpt-j-6B/"))
@@ -145,13 +145,9 @@ def huggingface_loader(model_name):
             LoaderClass = AutoModelForCausalLM
 
     # Load the model in simple 16-bit mode by default
-    if not any([shared.args.cpu, shared.args.load_in_8bit, shared.args.load_in_4bit, shared.args.auto_devices, shared.args.disk, shared.args.deepspeed, shared.args.gpu_memory is not None, shared.args.cpu_memory is not None]):
+    if not any([shared.args.cpu, shared.args.load_in_8bit, shared.args.load_in_4bit, shared.args.auto_devices, shared.args.disk, shared.args.deepspeed, shared.args.lcllcl is not None, shared.args.cpu_memory is not None]):
         model = LoaderClass.from_pretrained(Path(f"{shared.args.model_dir}/{model_name}"), low_cpu_mem_usage=True, torch_dtype=torch.bfloat16 if shared.args.bf16 else torch.float16, trust_remote_code=shared.args.trust_remote_code)
-        if torch.backends.mps.is_available():
-            device = torch.device('mps')
-            model = model.to(device)
-        else:
-            model = model.cuda()
+        model = model.to()
 
     # DeepSpeed ZeRO-3
     elif shared.args.deepspeed:
@@ -167,8 +163,7 @@ def huggingface_loader(model_name):
             "trust_remote_code": shared.args.trust_remote_code
         }
 
-        if not any((shared.args.cpu, torch.cuda.is_available(), torch.backends.mps.is_available())):
-            logger.warning("torch.cuda.is_available() returned False. This means that no GPU has been detected. Falling back to CPU mode.")
+        if not has_gpu():
             shared.args.cpu = True
 
         if shared.args.cpu:
@@ -250,7 +245,8 @@ def flexgen_loader(model_name):
 def RWKV_loader(model_name):
     from modules.RWKV import RWKVModel, RWKVTokenizer
 
-    model = RWKVModel.from_pretrained(Path(f'{shared.args.model_dir}/{model_name}'), dtype="fp32" if shared.args.cpu else "bf16" if shared.args.bf16 else "fp16", device="cpu" if shared.args.cpu else "cuda")
+    gpu_dev = get_gpu()
+    model = RWKVModel.from_pretrained(Path(f'{shared.args.model_dir}/{model_name}'), dtype="fp32" if shared.args.cpu else "bf16" if shared.args.bf16 else "fp16", device=gpu_dev)
     tokenizer = RWKVTokenizer.from_pretrained(Path(shared.args.model_dir))
     return model, tokenizer
 

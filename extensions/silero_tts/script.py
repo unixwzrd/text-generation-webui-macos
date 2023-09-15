@@ -4,9 +4,11 @@ from pathlib import Path
 import gradio as gr
 import torch
 
+from modules.logging_colors import logger
 from extensions.silero_tts import tts_preprocessor
 from modules import chat, shared
 from modules.utils import gradio
+from modules.ComputeDevice import gpu_dev
 
 torch._C._jit_set_profiling_mode(False)
 
@@ -17,7 +19,7 @@ params = {
     'language': 'en',
     'model_id': 'v3_en',
     'sample_rate': 48000,
-    'device': 'cpu',
+    'device': None,
     'show_text': False,
     'autoplay': True,
     'voice_pitch': 'medium',
@@ -54,7 +56,7 @@ def load_model():
         print(f'\nSilero TTS cache not found at {torch_cache_path}. Attempting to download...')
         tts_model, example_text = torch.hub.load(repo_or_dir='snakers4/silero-models', model='silero_tts', language=params['language'], speaker=params['model_id'])
 
-    tts_model.to(params['device'])
+    tts_model.to(gpu_dev())
     return tts_model
 
 

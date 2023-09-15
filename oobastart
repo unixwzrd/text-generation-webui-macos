@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# Load user overrides for environment varianbles. Set reasonable defaults
+# if none are set. Source in the oobabooga .env.local file
+
+# These are set to sane defaults if they are not set in the runtime 
+# environment based on the output of "conda info -s" and assuming the 
+# default installer was used.  If someoen instaleld manually wans wishes to # use the "textgen" venv, they may set the environmrnt variables in the 
+# .env.local file in the text=generation-webui insatllation directory.
+export CONDA_DEFAULT_ENV="${CONDA_DEFAULT_ENV:=textgen}"
+export CONDA_EXE="${CONDA_EXE:=/Users/mps/projects/AI-PROJECTS/oobabooga_macos/installer_files/conda/bin/conda}"
+export CONDA_PREFIX="${CONDA_PREFIX:=/Users/mps/projects/AI-PROJECTS/oobabooga_macos/installer_files/conda/envs/textgen}"
+export CONDA_PROMPT_MODIFIER="${CONDA_PROMPT_MODIFIER:=(textgen) }"
+export CONDA_PYTHON_EXE="${CONDA_PYTHON_EXE:=/Users/mps/projects/AI-PROJECTS/oobabooga_macos/installer_files/conda/bin/python}"
+export CONDA_ROOT="${CONDA_ROOT:=/Users/mps/projects/AI-PROJECTS/oobabooga_macos/installer_files/conda}"
+
+INSTALL_DIR="$(pwd)/installer_files"
+# CONDA_ROOT_PREFIX="$(pwd)/installer_files/conda"
+# INSTALL_ENV_DIR="$(pwd)/installer_files/env"
+# conda_exists="F"
+MINICONDA_DOWNLOAD_URL="https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-MacOSX-${OS_ARCH}.sh"
+
+
+# M Series or Intel - uname and arch give incorrect responses if run
+# inside Rosetta or other Intel environment like VSCode, sysctl better.
+KERNEL_ARCH=$(sysctl -n kern.version)
+case "${KERNEL_ARCH}" in
+    *X86_64*)   OS_ARCH="x86_64";;
+    *ARM64*)    OS_ARCH="arm64";;
+    *)          echo "Unknown system architecture: $KERNEL_ARCH! This script runs only on x86_64 or arm64" && exit
+esac
+
+# Check to see if base CPU architecture is consistent with current
+# environment, Give the user a chance to proceed or not.
+if [ "$OS_ARCH" != "$(uname -m)" ]; then
+    echo -e "\nWARNING: The kernel string, \"arch\" and \"uname -m\" do not agree.\n\nIt seems you are running this in Rosetta, VSCode Terminal, or Intel virtual\nmachine. This may result in mixed or unintended binary architectures when\ncompiling from source code.\n"
+    
+    echo -n "Do you wish to continue? [Y|N]: "
+    read -n 1 -r response
+    echo ""
+
+    if [[ ! $response =~ ^[Yy]$ ]]; then 
+        echo -e "Exiting.\n"
+        exit 1
+    fi
+fi
+
+# figure out whether git and conda needs to be installed
+# if [  ]; then conda_exists="T"; fi
+
+# (if necessary) install git and conda into a contained environment
+# download miniconda
+if [ ! -e "${CONDA_PYTHON_EXE}" ]; then
+    echo "Downloading Miniconda from $MINICONDA_DOWNLOAD_URL to $INSTALL_DIR/miniconda_installer.sh"
+
+    mkdir -p "$INSTALL_DIR"
+    curl -Lk "$MINICONDA_DOWNLOAD_URL" > "$INSTALL_DIR/miniconda_installer.sh"
+
+    chmod u+x "$INSTALL_DIR/miniconda_installer.sh"
+    bash "$INSTALL_DIR/miniconda_installer.sh" -b -p $CONDA_ROOT
+
+    # test the conda binary
+    echo "Miniconda version:"
+    "$CONDA_ROOT/bin/conda" --version
+fi
+
+# create the installer env
+if [ ! -e "$CONDA_PREFIX" ]; then
+    "$CONDA_ROOT/bin/conda" create -y -k --prefix "$CONDA_PREFIX" python=3.10
+fi
+
+# check if conda environment was actually created
+if [ ! -e "$CONDA_PREFIX/bin/python" ]; then
+    echo "Conda environment is empty."
+    exit
+fi
+
+# environment isolation
+unset PYTHONPATH
+unset PYTHONHOME
+
+export PYTHONNOUSERSITE=1
+export CUDA_PATH="$CONDA_PREFIX"
+export CUDA_HOME="$CUDA_PATH"
+
+# activate installer env
+source "$CONDA_ROOT/etc/profile.d/conda.sh" # otherwise conda complains about 'shell not initialized' (needed when running in a script)
+conda activate "$CONDA_DEFAULT_ENV"
+
+conda info --envs
+env | sort | grep -i pyth
+
+# setup installer env
+python webui.py
