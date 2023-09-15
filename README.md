@@ -1,4 +1,4 @@
-# MERGED 1.5 Version.  macOS TEST VERSION
+# MERGED 1.5 Version.  
 
 This is a development version and I have not added many changes I had planned. Please feel free to use at your own risk as there may be bugs not yet found.
 
@@ -12,8 +12,8 @@ Items working and tested on macOS
  * Works with LLaMa2 Models
     * There GGML models will need conversion to GGUF format if using llama-cpp-python 0.1.81.
     * Earlier version llama-coo-python still works
-    * Have not concluded testing of library dependencies, will have that updated in build instructions for oobagooba-macOS.
-    * Still mainly supporting GGML, now GGUF, GG-Universal Format files. You will have to convert your GGML files to GGUF format.
+    * Have not concluded testing of library dependencies, will have that updated in build instructions for oobagooba-macOS, it will require an older version of llama-cpp-python.
+    * Only GGUF files for llama.cpp IF you need this, please create a PR, thanks!
 
 Removed from this
  * Tried to continue what was already started in removing FlexGEN from the repo.
@@ -41,7 +41,7 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
-- [MERGED 1.5 Version.  macOS TEST VERSION](#merged-15-version--macos-test-version)
+- [MERGED 1.5 Version.](#merged-15-version)
   - [Features](#features)
   - [Installation](#installation)
   - [Downloading models](#downloading-models)
@@ -66,6 +66,7 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
   - [Contributing](#contributing)
   - [Community](#community)
   - [Credits](#credits)
+ 
 
 ## Features
 
