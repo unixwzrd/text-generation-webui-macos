@@ -28,9 +28,9 @@ def infer_loader(model_name):
         loader = 'llama.cpp'
     elif re.match('\.*\.gguf', model_name.lower()):
         loader = 'llama.cpp'
-     elif re.match('.*gguf.*\.bin', model_name.lower()):
+    elif re.match('.*gguf.*\.bin', model_name.lower()):
         loader = 'llama.cpp'
-     elif re.match('.*ggml.*\.bin', model_name.lower()):
+    elif re.match('.*ggml.*\.bin', model_name.lower()):
         loader = 'llama.cpp'
     elif re.match('.*rwkv.*\.pth', model_name.lower()):
         loader = 'RWKV'
