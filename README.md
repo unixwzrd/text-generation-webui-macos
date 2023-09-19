@@ -1,4 +1,4 @@
-# MERGED 1.5.1 Version.  macOS Merged Version
+# MERGED 1.5.1 macOS Merged Version
 
 This is a development version and I have not added many changes I had planned. Please feel free to use at your own risk as there may be bugs not yet found.
 
@@ -41,7 +41,7 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
-- [MERGED 1.5.1 Version.  macOS Merged Version](#merged-151-version--macos-merged-version)
+- [MERGED 1.5.1 macOS Merged Version](#merged-151-macos-merged-version)
   - [Features](#features)
   - [Installation](#installation)
   - [Downloading models](#downloading-models)
