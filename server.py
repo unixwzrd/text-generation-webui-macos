@@ -1,8 +1,24 @@
-import matplotlib
+import cProfile
+import importlib
+import json
+import math
+import os
+import re
+import sys
+import time
+import traceback
+import warnings
 from functools import partial
 from pathlib import Path
 from threading import Lock
+
+import matplotlib
+import psutil
+import torch
+import yaml
 from PIL import Image
+
+import modules.extensions as extensions_module
 from modules import chat, loaders, presets, shared, training, ui, utils
 from modules.block_requests import OpenMonkeyPatch, RequestBlocker
 from modules.extensions import apply_extensions
@@ -18,20 +34,6 @@ from modules.models_settings import (apply_model_settings_to_state,
 from modules.text_generation import (generate_reply_wrapper,
                                      get_encoded_length, stop_everything_event)
 from modules.utils import gradio
-import cProfile
-import importlib
-import json
-import math
-import os
-import re
-import sys
-import time
-import traceback
-import warnings
-import psutil
-import torch
-import yaml
-import modules.extensions as extensions_module
 
 os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
 os.environ['BITSANDBYTES_NOWELCOME'] = '1'
