@@ -43,3 +43,7 @@ Thumbs.db
 .env.local
 oobstart
 oobainst
+fix-this.txt
+audio.txt
+dbug.02.llama-new-timing.txt
+persistent_format.json
