@@ -43,3 +43,6 @@ Thumbs.db
 .env.local
 oobstart
 oobainst
+audio.txt
+fix-this.txt
+.gitignore
