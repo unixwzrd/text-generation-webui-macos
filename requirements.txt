@@ -1,29 +1,34 @@
-accelerate==0.21.0
+aiofiles==23.1.0
+fastapi==0.95.2
+gradio_client==0.2.5
+gradio==3.33.1
+pydantic==1.10.12
+
+accelerate==0.23.*
 colorama
-ctransformers
 datasets
 einops
-fastapi==0.100.0
-flexgen==0.1.7
-gradio_client==0.2.10
-gradio==3.38.0
+exllamav2==0.0.3
 markdown
-numpy
+numpy==1.24
+optimum==1.13.1
 pandas
-Pillow>=9.5.0:wandb
+peft==0.5.*
+Pillow>=9.5.0
 pyyaml
 requests
-safetensors==0.3.1
-sentencepiece
+safetensors==0.3.2
+transformers==4.33.*
 scipy
+sentencepiece
 tensorboard
-transformers==4.31.*
-tqdm
+ttqdm
+wandb
 # auto_gptq
 
 # PEFT
 git+https://github.com/huggingface/peft@03eb378eb914fbee709ff7c86ba5b1d033b89524
-bitsandbytes==0.41.0
+bitsandbytes==0.41.1
 # GGML/GGUF and llama.cpp Python API
 gguf
-llama-cpp-python==0.2.6
+llama-cpp-python==0.2.11

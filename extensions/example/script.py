@@ -7,14 +7,16 @@ functions are declared in the same order that they are called at
 generation time.
 """
 
+import gradio as gr
 import torch
-from modules import chat
+from transformers import LogitsProcessor
+
+from modules import chat, shared
 from modules.text_generation import (
     decode,
     encode,
     generate_reply,
 )
-from transformers import LogitsProcessor
 
 params = {
     "display_name": "Example Extension",
@@ -57,7 +59,7 @@ def chat_input_modifier(text, visible_text, state):
     """
     return text, visible_text
 
-def input_modifier(string, state):
+def input_modifier(string, state, is_chat=False):
     """
     In default/notebook modes, modifies the whole prompt.
 
@@ -90,7 +92,7 @@ def logits_processor_modifier(processor_list, input_ids):
     processor_list.append(MyLogits())
     return processor_list
 
-def output_modifier(string, state):
+def output_modifier(string, state, is_chat=False):
     """
     Modifies the LLM output before it gets presented.
 
