@@ -22,7 +22,7 @@ import modules.shared as shared
 from modules import RoPE, llama_attn_hijack, sampler_hijack
 from modules.logging_colors import logger
 from modules.models_settings import get_model_metadata
-from modules.ComputeDevice import get_gpu, has_gpu
+from modules.ComputeDevice import get_gpu, has_gpu, clear_gpu_cache
 
 transformers.logging.set_verbosity_error()
 
@@ -359,9 +359,7 @@ def get_max_memory_dict():
 
 def clear_torch_cache():
     gc.collect()
-    if not shared.args.cpu:
-        torch.cuda.empty_cache()
-
+    clear_gpu_cache()
 
 def unload_model():
     shared.model = shared.tokenizer = None

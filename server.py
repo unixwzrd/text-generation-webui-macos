@@ -3,13 +3,13 @@ import importlib
 import os
 import warnings
 
-import modules.one_click_installer_check
 from modules.block_requests import OpenMonkeyPatch, RequestBlocker
 from modules.logging_colors import logger
 
 os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
 os.environ['BITSANDBYTES_NOWELCOME'] = '1'
 warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
+warnings.filterwarnings('ignore', category=UserWarning, message='Using the update method is deprecated')
 
 with RequestBlocker():
     import gradio as gr
@@ -19,18 +19,12 @@ import matplotlib
 matplotlib.use('Agg')  # This fixes LaTeX rendering on some systems
 
 import json
-import os
 import sys
 import time
-import traceback
-import warnings
 from functools import partial
 from pathlib import Path
 from threading import Lock
 
-import matplotlib
-import psutil
-import torch
 import yaml
 
 import modules.extensions as extensions_module
@@ -57,17 +51,6 @@ from modules.models_settings import (
     update_model_parameters
 )
 from modules.utils import gradio
-
-os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
-os.environ['BITSANDBYTES_NOWELCOME'] = '1'
-warnings.filterwarnings('ignore', category=UserWarning, message='TypedStorage is deprecated')
-
-with RequestBlocker():
-    import gradio as gr
-
-matplotlib.use('Agg')  # This fixes LaTeX rendering on some systems
-
-
 
 def create_interface():
 

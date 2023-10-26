@@ -4,7 +4,7 @@ import logging
 import platform
 
 logging.basicConfig(
-    format='%(asctime)s %(levelname)s:%(message)s',
+    format='%(asctime)s %(levelname)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 

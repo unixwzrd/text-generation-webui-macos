@@ -6,7 +6,8 @@ from torch import version as torch_version
 
 from modules import shared
 from modules.logging_colors import logger
-from modules.models import clear_torch_cache
+#from modules.models import clear_torch_cache
+from modules.ComputeDevice import clear_torch_cache
 from modules.text_generation import get_max_prompt_length
 
 try:
