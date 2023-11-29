@@ -544,11 +544,6 @@ def load_character(character, name1, name2, instruct=False):
     greeting_field = 'greeting'
     picture = None
 
-    print("Before: ", character)
-    if character == 'None':
-        character = 'Assistant'
-    print("After: ", character)
-
     if instruct:
         name1 = name2 = ''
         folder = 'instruction-templates'
@@ -558,7 +553,6 @@ def load_character(character, name1, name2, instruct=False):
     filepath = None
     for extension in ["yml", "yaml", "json"]:
         filepath = Path(f'{folder}/{character}.{extension}')
-        print(filepath)
         if filepath.exists():
             break
 

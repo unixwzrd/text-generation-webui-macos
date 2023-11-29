@@ -77,20 +77,20 @@ def load_model(model_name, loader=None):
     shared.args.loader = loader
     output = load_func_map[loader](model_name)
     if type(output) is tuple:
-        lcl_model, lcl_tokenizer = output
+        model, tokenizer = output
     else:
-        lcl_model = output
-        if lcl_model is None:
+        model = output
+        if model is None:
             return None, None
         else:
-            lcl_tokenizer = load_tokenizer(model_name, lcl_tokenizer)
+            tokenizer = load_tokenizer(model_name, tokenizer)
 
     # Hijack attention with xformers
     if any((shared.args.xformers, shared.args.sdp_attention)):
         llama_attn_hijack.hijack_llama_attention()
 
     logger.info(f"Loaded the model in {(time.time()-t0):.2f} seconds.\n")
-    return lcl_model, lcl_tokenizer
+    return model, tokenizer
 
 
 def load_tokenizer(model_name, tokenizer):

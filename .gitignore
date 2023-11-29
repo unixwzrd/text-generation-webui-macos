@@ -49,5 +49,6 @@ dbug.02.llama-new-timing.txt
 persistent_format.json
 installer_files/
 fix-this.md
-instruction-templates/a-chat.yaml
-instruction-templates/Kayla.yaml
+instruction-templates/
+requirements-test.txt
+.gitignore

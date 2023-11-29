@@ -118,11 +118,6 @@ class ComputeDevice:
             return len(ComputeDevice.devices)
 
 
-    @classmethod
-    def release_index(cls, index):
-        cls.available_indices.add(index)
-
-
     def clear_cache(self):
         '''
         This clears the cache for the torch device passeed to us.
@@ -164,7 +159,7 @@ class ComputeDevice:
 
         Local rank is just an index of the torch device.
         
-        The statement: torch.device('cuds:0')
+        The statement: torch.device('cuda:0')
         Is identical to: torch.device('cuda', 0)
 
         '''
@@ -174,6 +169,11 @@ class ComputeDevice:
             return 'mps'
         else:
             return 'cpu'
+
+
+    @classmethod
+    def release_index(cls, index):
+        cls.available_indices.add(index)
 
 
     @classmethod

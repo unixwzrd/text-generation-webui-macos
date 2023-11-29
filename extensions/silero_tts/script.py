@@ -5,6 +5,11 @@ from pathlib import Path
 
 import gradio as gr
 import torch
+from pydub import AudioSegment  # You may need to install this
+
+import nltk
+nltk.download('punkt')
+from nltk.tokenize import sent_tokenize
 
 from modules.logging_colors import logger
 from extensions.silero_tts import tts_preprocessor
@@ -131,6 +136,24 @@ def history_modifier(history):
     return history
 
 
+def create_chunks(text, max_tensor_size):
+    sentences = sent_tokenize(text)
+    chunks = []
+    current_chunk = ""
+
+    for sentence in sentences:
+        if len(current_chunk) + len(sentence) <= max_tensor_size:
+            current_chunk += sentence
+        else:
+            chunks.append(current_chunk)
+            current_chunk = sentence
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
+
+
 def output_modifier(string, state):
     global _silero_tts_model, current_params, streaming_state
 
@@ -146,23 +169,38 @@ def output_modifier(string, state):
 
     original_string = string
     string = tts_preprocessor.preprocess(html.unescape(string))
+    max_tensor_size = 5000  # Set the maximum tensor size
 
     if string == '':
-        string = '*Empty reply, try regenerating*'
-    else:
+        return '*Empty reply, try regenerating*'
+
+    # Initialize a blank audio segment
+    combined_audio = AudioSegment.empty()
+
+    # Split the string into manageable chunks
+    chunks = create_chunks(string, 2000)
+
+    for chunk in chunks:
         output_file = Path(f'extensions/silero_tts/outputs/{state["character_menu"]}_{int(time.time())}.wav')
         prosody = '<prosody rate="{}" pitch="{}">'.format(params['voice_speed'], params['voice_pitch'])
-        silero_input = f'<speak>{prosody}{xmlesc(string)}</prosody></speak>'
+        silero_input = f'<speak>{prosody}{xmlesc(chunk)}</prosody></speak>'
         _silero_tts_model.save_wav(ssml_text=silero_input, speaker=params['speaker'], sample_rate=int(params['sample_rate']), audio_path=str(output_file))
 
-        autoplay = 'autoplay' if params['autoplay'] else ''
-        string = f'<audio src="file/{output_file.as_posix()}" controls {autoplay}></audio>'
-        if params['show_text']:
-            string += f'\n\n{original_string}'
+        # Load the generated audio and append it to combined_audio
+        new_audio = AudioSegment.from_wav(output_file)
+        combined_audio += new_audio
 
+    # Save the combined audio
+    combined_file = Path(f'extensions/silero_tts/outputs/{state["character_menu"]}_{int(time.time())}_combined.wav')
+    combined_audio.export(combined_file, format="wav")
+
+    autoplay = 'autoplay' if params['autoplay'] else ''
+    string = f'<audio src="file/{combined_file.as_posix()}" controls {autoplay}></audio>'
+    if params['show_text']:
+        string += f'\n\n{original_string}'
+    
     shared.processing_message = "*Is typing...*"
     return string
-
 
 def setup():
     global _silero_tts_model
