@@ -1,4 +1,4 @@
-# MERGED 1.6.1.macOS Version.  
+# MERGED 1.6.1.a macOS Version.  
 
 This is a development version and I have not added many changes I had planned. Please ||feel|| free to use at your own risk as there may be bugs not yet found.
 
@@ -41,43 +41,43 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
-- [MERGED 1.6.1.macOS Version.][6]
-  - [Features][7]
-  - [Installation][8]
-	- [One-click installers][9]
-	- [Manual installation using Conda][10]
-	  - [0. Install Conda][11]
-	  - [1. Create a new conda environment][12]
-	  - [2. Install Pytorch][13]
-	  - [2.1 Special instructions][14]
-	  - [3. Install the web UI][15]
-	  - [llama.cpp with GPU acceleration][16]
-	  - [bitsandbytes][17]
-	- [Alternative: Docker][18]
-	- [Updating the requirements][19]
-  - [Downloading models][20]
-	  - [GPT-4chan][21]
-  - [Starting the web UI][22]
-	  - [Basic settings][23]
-	  - [Model loader][24]
-	  - [Accelerate/transformers][25]
-	  - [Accelerate 4-bit][26]
-	  - [GGUF (for llama.cpp and ctransformers)][27]
-	  - [llama.cpp][28]
-	  - [ctransformers][29]
-	  - [AutoGPTQ][30]
-	  - [ExLlama][31]
-	  - [GPTQ-for-LLaMa][32]
-	  - [DeepSpeed][33]
-	  - [RWKV][34]
-	  - [RoPE (for llama.cpp, ExLlama, ExLlamaV2, and transformers)][35]
-	  - [Gradio][36]
-	  - [API][37]
-	  - [Multimodal][38]
-  - [Presets][39]
-  - [Contributing][40]
-  - [Community][41]
-  - [Acknowledgment][42]
+- [MERGED 1.6.1.a macOS Version.](#merged-161a-macos-version)
+	- [Features](#features)
+	- [Installation](#installation)
+		- [One-click installers](#one-click-installers)
+		- [Manual installation using Conda](#manual-installation-using-conda)
+			- [0. Install Conda](#0-install-conda)
+			- [1. Create a new conda environment](#1-create-a-new-conda-environment)
+			- [2. Install Pytorch](#2-install-pytorch)
+			- [2.1 Special instructions](#21-special-instructions)
+			- [3. Install the web UI](#3-install-the-web-ui)
+			- [llama.cpp with GPU acceleration](#llamacpp-with-gpu-acceleration)
+			- [bitsandbytes](#bitsandbytes)
+		- [Alternative: Docker](#alternative-docker)
+		- [Updating the requirements](#updating-the-requirements)
+	- [Downloading models](#downloading-models)
+			- [GPT-4chan](#gpt-4chan)
+	- [Starting the web UI](#starting-the-web-ui)
+			- [Basic settings](#basic-settings)
+			- [Model loader](#model-loader)
+			- [Accelerate/transformers](#acceleratetransformers)
+			- [Accelerate 4-bit](#accelerate-4-bit)
+			- [GGUF (for llama.cpp and ctransformers)](#gguf-for-llamacpp-and-ctransformers)
+			- [llama.cpp](#llamacpp)
+			- [ctransformers](#ctransformers)
+			- [AutoGPTQ](#autogptq)
+			- [ExLlama](#exllama)
+			- [GPTQ-for-LLaMa](#gptq-for-llama)
+			- [DeepSpeed](#deepspeed)
+			- [RWKV](#rwkv)
+			- [RoPE (for llama.cpp, ExLlama, ExLlamaV2, and transformers)](#rope-for-llamacpp-exllama-exllamav2-and-transformers)
+			- [Gradio](#gradio)
+			- [API](#api)
+			- [Multimodal](#multimodal)
+	- [Presets](#presets)
+	- [Contributing](#contributing)
+	- [Community](#community)
+	- [Acknowledgment](#acknowledgment)
 		 
 
 ## Features
