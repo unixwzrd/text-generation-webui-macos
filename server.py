@@ -1,11 +1,10 @@
+import cProfile
+
 import os
 import warnings
 
 from modules import shared
 
-import accelerate  # This early import makes Intel GPUs happy
-
-import modules.one_click_installer_check
 from modules.block_requests import OpenMonkeyPatch, RequestBlocker
 from modules.logging_colors import logger
 
@@ -173,8 +172,8 @@ def create_interface():
         )
 
 
-if __name__ == "__main__":
 
+def main:
     logger.info("Starting Text generation web UI")
     do_cmd_flags_warnings()
 
@@ -253,7 +252,7 @@ if __name__ == "__main__":
     else:
         # Launch the web UI
         create_interface()
-        while True:
+        while shared.run_server:
             time.sleep(0.5)
             if shared.need_restart:
                 shared.need_restart = False
@@ -261,3 +260,10 @@ if __name__ == "__main__":
                 shared.gradio['interface'].close()
                 time.sleep(0.5)
                 create_interface()
+
+if __name__ == "__main__":
+    if os.getenv('DEBUG_PROF') == "1" or True:
+        logger.info(f"Profiling activated sending information to output.prof")
+        cProfile.run('main()', "output.prof")
+    else:
+        main()

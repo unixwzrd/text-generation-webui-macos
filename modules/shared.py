@@ -26,6 +26,7 @@ processing_message = '*Is typing...*'
 gradio = {}
 persistent_interface_state = {}
 need_restart = False
+run_server = True
 
 # UI defaults
 settings = {

@@ -48,3 +48,18 @@ wandb
 /docker-compose.yml
 /Dockerfile
 .env
+output.prof
+instruction-templates/a-chat.yaml
+instruction-templates/Kayla.yaml
+instruction-templates/Martine-instruct.yaml
+instruction-templates/Mia Instruct.yaml
+instruction-templates/Mia-instruct.yaml
+instruction-templates/Mia-new.yaml
+instruction-templates/Mia-test-instruct.yaml
+instruction-templates/Mia-test.yaml
+instruction-templates/Mis-test.yaml
+instruction-templates/Sindy Pair Programmer.yaml
+instruction-templates/Sindy-code-instruct.yaml
+instruction-templates/Tabitha-Instruct-new.yaml
+instruction-templates/Tabitha-instruct.yaml
+instruction-templates/Tabitha.yaml

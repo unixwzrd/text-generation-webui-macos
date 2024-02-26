@@ -150,11 +150,11 @@ const observer = new MutationObserver(function(mutations) {
 
     const firstChild = targetElement.children[0];
     if (firstChild.classList.contains("generating")) {
-      typing.parentNode.classList.add("visible-dots");
+      // typing.parentNode.classList.add("visible-dots");
       document.getElementById("stop").style.display = "flex";
       document.getElementById("Generate").style.display = "none";
     } else {
-      typing.parentNode.classList.remove("visible-dots");
+      // typing.parentNode.classList.remove("visible-dots");
       document.getElementById("stop").style.display = "none";
       document.getElementById("Generate").style.display = "flex";
     }

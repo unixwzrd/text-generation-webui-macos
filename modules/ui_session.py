@@ -25,9 +25,15 @@ def create_ui():
             with gr.Column():
                 extension_name = gr.Textbox(lines=1, label='Install or update an extension', info='Enter the GitHub URL below and press Enter. For a list of extensions, see: https://github.com/oobabooga/text-generation-webui-extensions ⚠️  WARNING ⚠️ : extensions can execute arbitrary code. Make sure to inspect their source code before activating them.', interactive=not mu)
                 extension_status = gr.Markdown()
+                shared.gradio['stop_server'] = gr.Button("Shutrown the Server", elem_classes="small-button", variant="primary")
 
         shared.gradio['theme_state'] = gr.Textbox(visible=False, value='dark' if shared.settings['dark_theme'] else 'light')
         extension_name.submit(clone_or_pull_repository, extension_name, extension_status, show_progress=False)
+
+        # Stop Server Event
+        shared.gradio['stop_server'].click(
+            shutdown_server, gradio('extensions_menu', 'bool_menu'), None).then(
+                lambda: None, None, None, _js='() => {document.body.innerHTML=\'<h1 style="font-family:monospace;padding-top:20%;margin:0;height:100vh;color:lightgray;text-align:center;background:var(--body-background-fill)">Server Shutting Down...</h1>\'; setTimeout(function(){location.reload()},2500); return []}')
 
         # Reset interface event
         shared.gradio['reset_interface'].click(
@@ -59,6 +65,10 @@ def set_interface_arguments(extensions, bool_active):
             shared.add_extension('openai', last=True)
 
     shared.need_restart = True
+
+def shutdown_server(extensions, bool_active):
+    shared.stop_everything = True
+    shared.run_server = False
 
 
 def get_boolean_arguments(active=False):
