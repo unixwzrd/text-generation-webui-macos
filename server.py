@@ -2,6 +2,7 @@ import cProfile
 
 import os
 import warnings
+import datetime
 
 from modules import shared
 
@@ -173,7 +174,7 @@ def create_interface():
 
 
 
-def main:
+def main():
     logger.info("Starting Text generation web UI")
     do_cmd_flags_warnings()
 
@@ -264,6 +265,7 @@ def main:
 if __name__ == "__main__":
     if os.getenv('DEBUG_PROF') == "1" or True:
         logger.info(f"Profiling activated sending information to output.prof")
-        cProfile.run('main()', "output.prof")
+        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        cProfile.run('main()', f'output_{timestamp}.pstats')
     else:
         main()
