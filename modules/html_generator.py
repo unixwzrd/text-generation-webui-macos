@@ -49,6 +49,8 @@ def replace_blockquote(m):
 @functools.lru_cache(maxsize=4096)
 def convert_to_markdown(string):
 
+    if not isinstance(string, (str, bytes)):
+        string = str(string)  # convert `string` to a string if it's not already
     # Blockquote
     string = re.sub(r'(^|[\n])&gt;', r'\1>', string)
     pattern = re.compile(r'\\begin{blockquote}(.*?)\\end{blockquote}', re.DOTALL)

@@ -45,12 +45,12 @@ def my_open(*args, **kwargs):
             file_contents = f.read()
 
         file_contents = file_contents.replace(
-            '\t\t<script\n\t\t\tsrc="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"\n\t\t\tasync\n\t\t></script>',
-            ""
+            b'\t\t<script\n\t\t\tsrc="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"\n\t\t\tasync\n\t\t></script>',
+            b''
         )
-        file_contents = file_contents.replace("cdnjs.cloudflare.com", "127.0.0.1")
+        file_contents = file_contents.replace(b"cdnjs.cloudflare.com", b"127.0.0.1")
 
-        return io.BytesIO(file_contents.encode('utf-8'))  # convert string back to bytes
+        return io.BytesIO(file_contents)  # return bytes
     else:
         return original_open(*args, **kwargs)
 
