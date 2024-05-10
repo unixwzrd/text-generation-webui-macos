@@ -1,4 +1,84 @@
-# Text generation web UI
+# Text generation web UI - Modified for macOS and Apple Silicon 2024-05-10 Edition
+
+This is a dev release, documentation under re-work, there will probably be changes before final relese.
+
+This is a development version and I have not added many changes I had planned. Please ||feel|| free to use at your own risk as there may be bugs not yet found.
+
+Items Added to this version.
+ * "Stop Server" under the sessions tab. Use with caution if in multi-user, will probably disable this if in multi-user mode, however it offers better shutdown than just killing the process on the server.
+ * Added ElenevLabs extension back.
+
+Items working and tested on macOS
+ * More support for Apple Silicon M1/M2/M3 processors.
+ * Working with new llama-cpp-python 0.1.81
+ * Works with LLaMa2 Models
+        * There GGML models will need conversion to GGUF format if using llama-cpp-python 0.1.81.
+        * Earlier version llama-coo-python still works
+        * Have not concluded testing of library dependencies, will have that updated in build instructions for oobagooba-macOS, it will require an older version of llama-cpp-python.
+        * Only GGUF files for llama.cpp IF you need this, please create a PR, thanks!
+  
+Removed from this
+ * Tried to continue what was already started in removing FlexGEN from the repo.
+ * Removed Docker - if someone wants to help maintain for macOS, let me know.
+ * Slowly removing information on CUDA as it is not relevant to macOS.
+
+  **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart][1] and the longer [Building Apple Silicon Support][2]
+
+GGML support is in this release, and has not been extensively tested. From the look of upstream commits, there are some changes which must be made before this will work with Llama2 models.
+
+If you want the most recent version, from the oobabooga repository, go here: [oobabooga/text-generation-webgui][3]
+
+Otherwise, use these instructions I have on putting together the macOS Python environment. These instructions are not only useful for setting up oobabooga, but also for anyone working in data analytics, machine learning, deep learning, scientific computing, and other areas that can benefit from an optimized Python GPU environment on Apple Silicon.
+
+* [Building Apple Silicon Support for oobabooga text-generation-webui][4]
+* [oobabooga macOS Apple Silicon Quick Start for the Impatient][5]
+
+I will be updating this README file with new information specifically regarding macOS and Apple Silicon.
+
+I would like to work closely with the oobabooga team and try to implement similar solutions so the web UI can have a similar look and feel.
+
+Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can Buy Me a Coffee, sponsor this project, or consider me for job opportunities.
+
+While the focus of this branch is to enhance macOS and Apple Silicon support, I aim to maintain compatibility with Linux and POSIX operating systems. Contributions and feedback related to Linux compatibility are always welcome.
+
+Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
+
+- [Text generation web UI - Modified for macOS and Apple Silicon 2024-05-10 Edition](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-05-10-edition)
+  - [Features](#features)
+  - [How to install](#how-to-install)
+    - [One-click-installer](#one-click-installer)
+    - [Manual installation using Conda](#manual-installation-using-conda)
+      - [0. Install Conda](#0-install-conda)
+      - [1. Create a new conda environment](#1-create-a-new-conda-environment)
+      - [2. Install Pytorch](#2-install-pytorch)
+      - [3. Install the web UI](#3-install-the-web-ui)
+    - [Start the web UI](#start-the-web-ui)
+        - [AMD GPU on Windows](#amd-gpu-on-windows)
+        - [Older NVIDIA GPUs](#older-nvidia-gpus)
+        - [Manual install](#manual-install)
+    - [Alternative: Docker](#alternative-docker)
+    - [Updating the requirements](#updating-the-requirements)
+      - [Basic settings](#basic-settings)
+      - [Model loader](#model-loader)
+      - [Accelerate/transformers](#acceleratetransformers)
+      - [bitsandbytes 4-bit](#bitsandbytes-4-bit)
+      - [llama.cpp](#llamacpp)
+      - [ExLlamav2](#exllamav2)
+      - [AutoGPTQ](#autogptq)
+      - [GPTQ-for-LLaMa](#gptq-for-llama)
+      - [HQQ](#hqq)
+      - [DeepSpeed](#deepspeed)
+      - [RoPE (for llama.cpp, ExLlamaV2, and transformers)](#rope-for-llamacpp-exllamav2-and-transformers)
+      - [Gradio](#gradio)
+      - [API](#api)
+      - [Multimodal](#multimodal)
+  - [Documentation](#documentation)
+  - [Downloading models](#downloading-models)
+  - [Google Colab notebook](#google-colab-notebook)
+  - [Contributing](#contributing)
+  - [Community](#community)
+  - [Acknowledgment](#acknowledgment)
+
 
 A Gradio web UI for Large Language Models.
 

@@ -48,6 +48,8 @@ wandb
 /docker-compose.yml
 /Dockerfile
 .env
+*.pstats
+
 output.prof
 instruction-templates/a-chat.yaml
 instruction-templates/Kayla.yaml
@@ -63,6 +65,5 @@ instruction-templates/Sindy-code-instruct.yaml
 instruction-templates/Tabitha-Instruct-new.yaml
 instruction-templates/Tabitha-instruct.yaml
 instruction-templates/Tabitha.yaml
-*.pstats
 instruction-templates/MiquMaid v2 DPO.yaml
 instruction-templates/Kirsten-instruct.yaml
