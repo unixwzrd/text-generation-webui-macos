@@ -35,6 +35,7 @@ venv
 *.bak
 *.ipynb
 *.log
+.*.swp
 *pycache*
 cert.pem
 key.pem

@@ -263,7 +263,7 @@ def main():
                 create_interface()
 
 if __name__ == "__main__":
-    if os.getenv('DEBUG_PROF') == "1" or True:
+    if os.getenv('DEBUG_PROF') == "1":
         logger.info(f"Profiling activated sending information to output.prof")
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         cProfile.run('main()', f'output_{timestamp}.pstats')
