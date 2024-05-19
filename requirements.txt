@@ -31,4 +31,13 @@ flask_cloudflared==0.0.14
 sse-starlette==2.1.0
 tiktoken
 
-llama-cpp-python
+scikit-build-core
+exceptiongroup
+packaging
+ninja
+cmake
+pathspec
+tomli
+Cython>=0.29.34,<3.1
+meson-python>=0.15.0,<0.16.0
+scikit_build
