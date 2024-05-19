@@ -3,7 +3,6 @@ import copy
 import html
 import pprint
 import random
-import re
 import time
 import traceback
 
@@ -57,8 +56,7 @@ def _generate_reply(question, state, stopping_strings=None, is_chat=False, escap
 
     if generate_func != generate_reply_HF and shared.args.verbose:
         logger.info("PROMPT=")
-        print(question)
-        print()
+        print_prompt(question)
 
     # Prepare the input
     original_question = question
@@ -85,6 +83,10 @@ def _generate_reply(question, state, stopping_strings=None, is_chat=False, escap
         state = copy.deepcopy(state)
         state['stream'] = True
 
+    min_update_interval = 0
+    if state.get('max_updates_second', 0) > 0:
+        min_update_interval = 1 / state['max_updates_second']
+
     # Generate
     for reply in generate_func(question, original_question, seed, state, stopping_strings, is_chat=is_chat):
         reply, stop_found = apply_stopping_strings(reply, all_stop_strings)
@@ -102,7 +104,14 @@ def _generate_reply(question, state, stopping_strings=None, is_chat=False, escap
 
                 last_update = time.time()
                 yield reply
+
+            # Limit updates to avoid lag in the Gradio UI
+            # API updates are not limited
             else:
+                if cur_time - last_update > min_update_interval:
+                    last_update = cur_time
+                    yield reply
+
                 yield reply
 
         if stop_found or (state['max_tokens_second'] > 0 and shared.stop_everything):
@@ -194,20 +203,6 @@ def generate_reply_wrapper(question, state, stopping_strings=None):
 
 def formatted_outputs(reply, model_name):
     return html.unescape(reply), generate_basic_html(reply)
-
-
-def fix_galactica(s):
-    """
-    Fix the LaTeX equations in GALACTICA
-    """
-    s = s.replace(r'\[', r'$')
-    s = s.replace(r'\]', r'$')
-    s = s.replace(r'\(', r'$')
-    s = s.replace(r'\)', r'$')
-    s = s.replace(r'$$', r'$')
-    s = re.sub(r'\n', r'\n\n', s)
-    s = re.sub(r"\n{3,}", "\n\n", s)
-    return s
 
 
 def set_manual_seed(seed):
@@ -347,8 +342,7 @@ def generate_reply_HF(question, original_question, seed, state, stopping_strings
         print()
 
         logger.info("PROMPT=")
-        print(decode(input_ids[0], skip_special_tokens=False))
-        print()
+        print_prompt(decode(input_ids[0], skip_special_tokens=False))
 
     # Handle StreamingLLM for llamacpp_HF
     if shared.model.__class__.__name__ == 'LlamacppHF' and shared.args.streaming_llm:
@@ -437,3 +431,18 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
         new_tokens = len(encode(original_question + reply)[0]) - original_tokens
         print(f'Output generated in {(t1-t0):.2f} seconds ({new_tokens/(t1-t0):.2f} tokens/s, {new_tokens} tokens, context {original_tokens}, seed {seed})')
         return
+
+
+def print_prompt(prompt, max_chars=2000):
+    DARK_YELLOW = "\033[38;5;3m"
+    RESET = "\033[0m"
+
+    if len(prompt) > max_chars:
+        half_chars = max_chars // 2
+        hidden_len = len(prompt[half_chars:-half_chars])
+        hidden_msg = f"{DARK_YELLOW}[...{hidden_len} characters hidden...]{RESET}"
+        print(prompt[:half_chars] + hidden_msg + prompt[-half_chars:])
+    else:
+        print(prompt)
+
+    print()

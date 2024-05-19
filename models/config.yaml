@@ -278,5 +278,43 @@ TheBloke_WizardLM-30B-GPTQ:
 .*llama-(2|v2).*chat:
   mode: 'instruct'
   instruction_template: 'Llama-v2'
-.*llama.*70b.*ggml.*\.bin:
-  n_gqa: 8
+.*newhope:
+  instruction_template: 'NewHope'
+.*stablebeluga2:
+  instruction_template: 'StableBeluga2'
+.*openchat:
+  instruction_template: 'OpenChat'
+.*codellama.*instruct:
+  instruction_template: 'Llama-v2'
+.*(mistral|mixtral).*instruct:
+  instruction_template: 'Mistral'
+.*mistral.*openorca:
+  instruction_template: 'ChatML'
+.*(WizardCoder-Python-34B-V1.0|Phind-CodeLlama-34B-v2|CodeBooga-34B-v0.1):
+  instruction_template: 'Alpaca'
+.*orca-2-(13|7)b:
+  instruction_template: 'ChatML'
+.*openhermes.*mistral:
+  instruction_template: 'ChatML'
+.*Yi-34B-Chat:
+  instruction_template: 'ChatML'
+(dolphin).*:
+  instruction_template: 'ChatML'
+.*synthia:
+  instruction_template: 'Synthia'
+.*(hercules|hyperion):
+  instruction_template: 'ChatML'
+.*command-r:
+  instruction_template: 'Command-R'
+.*xwin-lm-70b-v0.1:
+  instruction_template: 'Vicuna-v1.1'
+.*platypus-yi-34b:
+  instruction_template: 'Vicuna-v1.1'
+.*CausalLM-RP-34B:
+  instruction_template: 'ChatML'
+34b-beta:
+  instruction_template: 'ChatML'
+.*airoboros-3_1-yi-34b-200k:
+  instruction_template: 'Llama-v2'
+.*chatqa:
+  instruction_template: 'NVIDIA-ChatQA'

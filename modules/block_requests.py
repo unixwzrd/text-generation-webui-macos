@@ -49,6 +49,15 @@ def my_open(*args, **kwargs):
             b''
         )
         file_contents = file_contents.replace(b"cdnjs.cloudflare.com", b"127.0.0.1")
+        file_contents = file_contents.replace(
+            b'</head>',
+            b'\n    <script src="file/js/katex/katex.min.js"></script>'
+            b'\n    <script src="file/js/katex/auto-render.min.js"></script>'
+            b'\n    <script src="file/js/highlightjs/highlight.min.js"></script>'
+            b'\n    <script src="file/js/highlightjs/highlightjs-copy.min.js"></script>'
+            b'\n    <script>hljs.addPlugin(new CopyButtonPlugin());</script>'
+            b'\n  </head>'
+        )
 
         return io.BytesIO(file_contents)  # return bytes
     else:

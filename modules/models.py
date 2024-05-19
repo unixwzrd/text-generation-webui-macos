@@ -107,10 +107,10 @@ def load_model(model_name, loader=None):
     elif loader in ['llama.cpp', 'llamacpp_HF']:
         shared.settings['truncation_length'] = shared.args.n_ctx
 
+    logger.info(f"Loaded \"{model_name}\" in {(time.time()-t0):.2f} seconds.")
     logger.info(f"LOADER: \"{loader}\"")
     logger.info(f"TRUNCATION LENGTH: {shared.settings['truncation_length']}")
     logger.info(f"INSTRUCTION TEMPLATE: \"{metadata['instruction_template']}\"")
-    logger.info(f"Loaded the model in {(time.time()-t0):.2f} seconds.")
     return model, tokenizer
 
 
@@ -179,7 +179,7 @@ def huggingface_loader(model_name):
 
     # DeepSpeed ZeRO-3
     elif shared.args.deepspeed:
-        model = LoaderClass.from_pretrained(path_to_model, torch_dtype=params['torch_dtype'], trust_remote_code=params['trust_remote_code'])
+        model = LoaderClass.from_pretrained(path_to_model, torch_dtype=params['torch_dtype'], trust_remote_code=params.get('trust_remote_code'))
         model = deepspeed.initialize(model=model, config_params=ds_config, model_parameters=None, optimizer=None, lr_scheduler=None)[0]
         model.module.eval()  # Inference
         logger.info(f'DeepSpeed ZeRO-3 is enabled: {is_deepspeed_zero3_enabled()}')
@@ -205,6 +205,7 @@ def huggingface_loader(model_name):
                     'bnb_4bit_compute_dtype': eval("torch.{}".format(shared.args.compute_dtype)) if shared.args.compute_dtype in ["bfloat16", "float16", "float32"] else None,
                     'bnb_4bit_quant_type': shared.args.quant_type,
                     'bnb_4bit_use_double_quant': shared.args.use_double_quant,
+                    'llm_int8_enable_fp32_cpu_offload': True
                 }
 
                 params['quantization_config'] = BitsAndBytesConfig(**quantization_config_params)
@@ -215,15 +216,15 @@ def huggingface_loader(model_name):
                 else:
                     params['quantization_config'] = BitsAndBytesConfig(load_in_8bit=True)
 
-                if params['max_memory'] is not None:
+                if params.get('max_memory') is not None:
                     with init_empty_weights():
-                        model = LoaderClass.from_config(config, trust_remote_code=params['trust_remote_code'])
+                        model = LoaderClass.from_config(config, trust_remote_code=params.get('trust_remote_code'))
 
                     model.tie_weights()
                     params['device_map'] = infer_auto_device_map(
                         model,
                         dtype=torch.int8,
-                        max_memory=params['max_memory'],
+                        max_memory=params.get('max_memory'),
                         no_split_module_classes=model._no_split_modules
                     )
 
