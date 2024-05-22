@@ -433,7 +433,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
         return
 
 
-def print_prompt(prompt, max_chars=10000):
+def print_prompt(prompt, max_chars=2000):
     DARK_YELLOW = "\033[38;5;3m"
     RESET = "\033[0m"
 
