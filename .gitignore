@@ -71,4 +71,5 @@ instruction-templates/Kirsten-instruct.yaml
 instruction-templates/Kirsten_Instruct.yaml
 extensions/alltalk_tts
 
-extensions/elevenlabs_tts/outputs/*
+extensions/elevenlabs_tts/outputs/*.wav
+extensions/elevenlabs_tts/outputs/*.mp3
