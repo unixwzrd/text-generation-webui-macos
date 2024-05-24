@@ -1,7 +1,7 @@
 /cache
 /characters
 /css
-/extensions
+# /extensions
 /grammars
 /installer_files
 /logs
@@ -69,3 +69,6 @@ instruction-templates/Tabitha.yaml
 instruction-templates/MiquMaid v2 DPO.yaml
 instruction-templates/Kirsten-instruct.yaml
 instruction-templates/Kirsten_Instruct.yaml
+extensions/alltalk_tts
+
+extensions/elevenlabs_tts/outputs/*
