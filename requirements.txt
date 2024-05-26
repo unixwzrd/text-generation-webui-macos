@@ -5,6 +5,7 @@ einops
 gradio==4.26.*
 hqq==0.1.5
 jinja2==3.1.2
+llama_cpp_python
 lm_eval==0.3.0
 markdown
 numba==0.59.*
@@ -31,6 +32,7 @@ flask_cloudflared==0.0.14
 sse-starlette==2.1.0
 tiktoken
 
+# For building llama_cpp_python later
 scikit-build-core
 exceptiongroup
 packaging
