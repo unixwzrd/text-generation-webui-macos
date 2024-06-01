@@ -7,35 +7,29 @@ This is a dev release, documentation under re-work, there will probably be chang
 This is a development version and I have not added many changes I had planned. Please ||feel|| free to use at your own risk as there may be bugs not yet found.
 
 Items Added to this version.
- * "Stop Server" under the sessions tab. Use with caution if in multi-user, will probably disable this if in multi-user mode, however it offers better shutdown than just killing the process on the server.
- * Added ElevenLabs extension back.
+ * Added ElevenLabs extension back
 
 Items working and tested on macOS
- * More support for Apple Silicon M1/M2/M3 processors.
+ * More support for Apple Silicon M1/M2/M3 processors
  * Working with new llama-cpp-python 0.1.81
  * Works with LLaMa2 Models
-        * There GGML models will need conversion to GGUF format if using llama-cpp-python 0.1.81.
-        * Earlier version llama-coo-python still works
-        * Have not concluded testing of library dependencies, will have that updated in build instructions for oobagooba-macOS, it will require an older version of llama-cpp-python.
-        * Only GGUF files for llama.cpp IF you need this, please create a PR, thanks!
-  
+        * The pip recompile of llama-cpp-python has changed.
+    
 Removed from this
- * Tried to continue what was already started in removing FlexGEN from the repo.
- * Removed Docker - if someone wants to help maintain for macOS, let me know.
- * Slowly removing information on CUDA as it is not relevant to macOS.
+ * Tried to continue what was already started in removing FlexGEN from the repo
+ * Removed Docker - if someone wants to help maintain for macOS, let me know
+ * Slowly removing information on CUDA as it is not relevant to macOS
 
-  **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart][1] and the longer [Building Apple Silicon Support][2]
+  **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.m1) and the longer [Building Apple Silicon Support](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
 
-If you want the most recent version, from the oobabooga repository, go here: [oobabooga/text-generation-webgui][3]
+If you want the most recent version, from the oobabooga repository, go here: [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generation-webui)
 
 Otherwise, use these instructions I have on putting together the macOS Python environment. These instructions are not only useful for setting up oobabooga, but also for anyone working in data analytics, machine learning, deep learning, scientific computing, and other areas that can benefit from an optimized Python GPU environment on Apple Silicon.
 
-* [Building Apple Silicon Support for oobabooga text-generation-webui][4]
-* [oobabooga macOS Apple Silicon Quick Start for the Impatient][5]
+* [Building Apple Silicon Support for oobabooga text-generation-webui](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
+* [oobabooga macOS Apple Silicon Quick Start for the Impatient](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.m1)
 
 I will be updating this README file with new information specifically regarding macOS and Apple Silicon.
-
-I would like to work closely with the oobabooga team and try to implement similar solutions so the web UI can have a similar look and feel.
 
 Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can Buy Me a Coffee, sponsor this project, or consider me for job opportunities.
 
@@ -43,23 +37,21 @@ While the focus of this branch is to enhance macOS and Apple Silicon support, I 
 
 Anyone who would like to assist with supporting Apple Silicon, let me know. There is much to do and I can only do so much by myself.
 
+## All the features of the UI will run on macOS and have been tested on the following configurations, using only llama.cpp
+
+There are CUDA issues to work out, and I'd like to find a better way around this, but wanted to get this out as soon as I could and continue to work on the other in thw background.
+
+|   Hardware                       | Memory | macOS Name | Version |
+|----------------------------------|--------|------------|---------|
+| MacBook Pro 16" M2 Max Processor |  96GB  |  Sonoma    | 14.5    |
+
 - [Text generation web UI - Modified for macOS and Apple Silicon 2024-05-10 Edition](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-05-10-edition)
   - [This is the original oobabooga text generation webui modified to run on macOS](#this-is-the-original-oobabooga-text-generation-webui-modified-to-run-on-macos)
+  - [All the features of the UI will run on macOS and have been tested on the following configurations, using only llama.cpp](#all-the-features-of-the-ui-will-run-on-macos-and-have-been-tested-on-the-following-configurations-using-only-llamacpp)
   - [Features](#features)
-  - [Install Miniconda](#install-miniconda)
-    - [Download the miniconda installer](#download-the-miniconda-installer)
-    - [Run the installer in non-destructive mode in order to preserve any existing installation.](#run-the-installer-in-non-destructive-mode-in-order-to-preserve-any-existing-installation)
-      - [Get a new login shell](#get-a-new-login-shell)
-  - [Build and install CMake](#build-and-install-cmake)
-    - [Clone the CMake repository, build, and install CMake](#clone-the-cmake-repository-build-and-install-cmake)
-    - [This will configure the installation of cmake to be in your home directory under local, rather than /usr/local](#this-will-configure-the-installation-of-cmake-to-be-in-your-home-directory-under-local-rather-than-usrlocal)
-    - [Be sure to add ${HOME}/local/bin to your path  **Add to your .profile, .bashrc, etc...**](#be-sure-to-add-homelocalbin-to-your-path--add-to-your-profile-bashrc-etc)
-    - [Verify the installation](#verify-the-installation)
-  - [Get my oobabooga and checkout macOS-test branch](#get-my-oobabooga-and-checkout-macos-test-branch)
-    - [llamacpp-python](#llamacpp-python)
-    - [Pip PyTorch install from daily build](#pip-pytorch-install-from-daily-build)
-    - [NumPy Rebuild with Pip](#numpy-rebuild-with-pip)
-    - [CTransformers](#ctransformers)
+  - [Installation process](#installation-process)
+    - [Install Miniconda](#install-miniconda)
+      - [Download the miniconda installer](#download-the-miniconda-installer)
   - [Startup Options](#startup-options)
       - [Basic settings](#basic-settings)
       - [Model loader](#model-loader)
@@ -81,10 +73,10 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
   - [Acknowledgments](#acknowledgments)
 
 
-
 A Gradio web UI for Large Language Models, running on macOS
 
 The goal of this project is to bring oobabooga to macOS.
+
 oobabooga's goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) of text generation.
 
 |![Image1](https://github.com/oobabooga/screenshots/raw/main/print_instruct.png) | ![Image2](https://github.com/oobabooga/screenshots/raw/main/print_chat.png) |
@@ -92,12 +84,6 @@ oobabooga's goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https:/
 |![Image1](https://github.com/oobabooga/screenshots/raw/main/print_default.png) | ![Image2](https://github.com/oobabooga/screenshots/raw/main/print_parameters.png) |
 
 ## Features
-
-All the features of the UI will run on macOS and ave been tested on the following configurations, only llama.cpp is fully supported:
-
-|   Hardware                       | Memory | macOS Name | Version |
-|----------------------------------|--------|------------|---------|
-| MacBook Pro 16" M2 Max Processor |  96GB  |  Sonoma    | 14.5    |
 
 * 3 interface modes: default (two columns), notebook, and chat.
 * Only [llama.cpp](https://github.com/ggerganov/llama.cpp) for now.
@@ -111,13 +97,17 @@ All the features of the UI will run on macOS and ave been tested on the followin
 * OpenAI-compatible API server with Chat and Completions endpoints -- see the [examples](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples).
 
 
+## Installation process
 
-## Install Miniconda
+### Install Miniconda
 
-### Download the miniconda installer
+#### Download the miniconda installer
+
+```bash
 curl  https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o miniconda.sh
 
-### Run the installer in non-destructive mode in order to preserve any existing installation.
+
+#### Run the installer in non-destructive mode in order to preserve any existing installation.
 sh miniconda.sh -b -u
 
 . "${HOME}/miniconda3/bin/activate"
@@ -131,49 +121,56 @@ exec bash -l
 conda create -n llama-env python=3.10 -y
 conda activate llama-env
 
-## Build and install CMake
+### Build and install CMake
 
-### Clone the CMake repository, build, and install CMake
+#### Clone the CMake repository, build, and install CMake
+
 git clone https://github.com/Kitware/CMake.git
 cd CMake
 git checkout tags/v3.29.3
 mkdir build
 cd build
 
-### This will configure the installation of cmake to be in your home directory under local, rather than /usr/local
+#### This will configure the installation of cmake to be in your home directory under local, rather than /usr/local
+
 ../bootstrap --prefix=${HOME}/local
 make -j
 make -j test
 make install
 
-### Be sure to add ${HOME}/local/bin to your path  **Add to your .profile, .bashrc, etc...**
+#### Be sure to add ${HOME}/local/bin to your path  **Add to your .profile, .bashrc, etc...**
+
 export PATH=${HOME}/local/bin:${PATH}
 
-### Verify the installation
+#### Verify the installation
+
 which cmake       # Should say $HOME/local/bin
 cmake --version
 
-## Get my oobabooga and checkout macOS-test branch
+### Get my oobabooga and checkout macOS-test branch
+
 git clone https://github.com/unixwzrd/text-generation-webui-macos.git textgen-macOS
 cd textgen-macOS
 git checkout macOS-dev
 pip install -r requirements.txt
 
-### llamacpp-python
+#### llamacpp-python
+
 export CMAKE_ARGS="-DLLAMA_METAL=on"
 export FORCE_CMAKE=1
 export PATH=/usr/local/bin:$PATH  # Ensure the correct cmake is used
 pip install llama-cpp-python --force-reinstall --no-cache --no-binary :all: --compile --no-deps --no-build-isolation
 
-### Pip PyTorch install from daily build
+#### Pip PyTorch install from daily build
 pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu --force-reinstall --no-deps
 
-### NumPy Rebuild with Pip
+#### NumPy Rebuild with Pip
 export CFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers -Wl,-framework -Wl,Accelerate -framework Accelerate"; pip install numpy --force-reinstall --no-deps --no-cache --no-binary :all: --no-build-isolation --compile -Csetup-args=-Dblas=accelerate -Csetup-args=-Dlapack=accelerate -Csetup-args=-Duse-ilp64=true
 
-### CTransformers
+#### CTransformers
 export CFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers -Wl,-framework -Wl,Accelerate -framework Accelerate"; export CT_METAL=1; pip install ctransformers --no-binary :all: --no-deps --no-build-isolation --compile --force-reinstall -v
 unset CMAKE_ARGS FORCE_CMAKE CFLAGS CT_METAL
+```
 
 ## Startup Options
 <details>
