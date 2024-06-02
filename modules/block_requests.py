@@ -39,6 +39,9 @@ def my_get(url, **kwargs):
 
 # Kindly provided by our friend WizardLM-30B
 def my_open(*args, **kwargs):
+    """
+    Custom open function that modifies the file contents before returning.
+    """
     filename = str(args[0])
     if filename.endswith("index.html"):
         with original_open(*args, **kwargs) as f:
@@ -59,11 +62,14 @@ def my_open(*args, **kwargs):
             b'\n  </head>'
         )
 
-        return io.BytesIO(file_contents)  # return bytes
+        return io.BytesIO(file_contents.decode())  # return bytes
     else:
         return original_open(*args, **kwargs)
 
 def my_print(*args, **kwargs):
+    """
+    Custom print function that modifies the output before printing.
+    """
     if len(args) > 0 and "To create a public link, set `share=True`" in args[0]:
         return
     else:
