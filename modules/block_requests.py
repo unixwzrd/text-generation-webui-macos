@@ -62,7 +62,7 @@ def my_open(*args, **kwargs):
             b'\n  </head>'
         )
 
-        return io.BytesIO(file_contents.decode())  # return bytes
+        return io.BytesIO(file_contents)  # return bytes
     else:
         return original_open(*args, **kwargs)
 
