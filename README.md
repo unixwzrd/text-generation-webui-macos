@@ -11,13 +11,11 @@ Items Added to this version.
 
 Items working and tested on macOS
  * More support for Apple Silicon M1/M2/M3 processors
- * Working with new llama-cpp-python 0.1.81
- * Works with LLaMa2 Models
+ * Works with LLaMa2 Models and GGUF
         * The pip recompile of llama-cpp-python has changed.
     
 Removed from this
- * Tried to continue what was already started in removing FlexGEN from the repo
- * Removed Docker - if someone wants to help maintain for macOS, let me know
+ * Removed Docker - Does not use GPU and ANE anyway.
  * Slowly removing information on CUDA as it is not relevant to macOS
 
   **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.m1) and the longer [Building Apple Silicon Support](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
