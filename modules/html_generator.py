@@ -129,7 +129,7 @@ def generate_basic_html(string):
 def make_thumbnail(image):
     image = image.resize((350, round(image.size[1] / image.size[0] * 350)), Image.Resampling.LANCZOS)
     if image.size[1] > 470:
-        image = ImageOps.fit(image, (350, 470), Image.LANCZOS)
+        image = ImageOps.fit(image, (350, 470), Image.Resampling.LANCZOS)
 
     return image
 
@@ -186,7 +186,7 @@ def generate_instruct_html(history):
     return output
 
 
-def generate_cai_chat_html(history, name1, name2, style, character, reset_cache=False):
+def generate_cai_chat_html(history, name1, name2, visible_dots, style, character, reset_cache=False):
     output = f'<style>{chat_styles[style]}</style><div class="chat" id="chat"><div class="messages">'
 
     # We use ?character and ?time.time() to force the browser to reset caches
@@ -264,10 +264,10 @@ def generate_chat_html(history, name1, name2, reset_cache=False):
     return output
 
 
-def chat_html_wrapper(history, name1, name2, mode, style, character, reset_cache=False):
+def chat_html_wrapper(history, name1, name2, mode, visible_dots, style, character, reset_cache=False):
     if mode == 'instruct':
         return generate_instruct_html(history['visible'])
     elif style == 'wpp':
         return generate_chat_html(history['visible'], name1, name2)
     else:
-        return generate_cai_chat_html(history['visible'], name1, name2, style, character, reset_cache)
+        return generate_cai_chat_html(history['visible'], name1, name2, visible_dots, style, character, reset_cache)

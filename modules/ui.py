@@ -179,6 +179,7 @@ def list_interface_input_elements():
         'greeting',
         'context',
         'mode',
+        'visible_dots',
         'custom_system_message',
         'instruction_template_str',
         'chat_template_str',

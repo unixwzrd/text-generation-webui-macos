@@ -32,7 +32,8 @@ def create_ui():
 
         # Stop Server Event
         shared.gradio['stop_server'].click(
-            shutdown_server, gradio('extensions_menu', 'bool_menu'), None).then(
+#            shutdown_server, gradio('extensions_menu', 'bool_menu')).then(
+            shutdown_server, gradio()).then(
                 lambda: None, None, None, _js='() => {document.body.innerHTML=\'<h1 style="font-family:monospace;padding-top:20%;margin:0;height:100vh;color:lightgray;text-align:center;background:var(--body-background-fill)">Server Shutting Down...</h1>\'; setTimeout(function(){location.reload()},2500); return []}')
 
         # Reset interface event
@@ -66,7 +67,7 @@ def set_interface_arguments(extensions, bool_active):
 
     shared.need_restart = True
 
-def shutdown_server(extensions, bool_active):
+def shutdown_server():
     shared.stop_everything = True
     shared.run_server = False
 

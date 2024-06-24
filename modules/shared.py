@@ -35,6 +35,7 @@ settings = {
     'start_with': '',
     'mode': 'chat',
     'chat_style': 'cai-chat',
+    'visible_dots': True,
     'prompt-default': 'QA',
     'prompt-notebook': 'QA',
     'preset': 'min_p',

@@ -147,8 +147,7 @@ def encode(prompt, add_special_tokens=True, add_bos_token=True, truncation_lengt
         import deepspeed
         return input_ids.to(deepspeed.get_accelerator().current_device_name())
     elif torch.backends.mps.is_available():
-        device = torch.device('mps')
-        return input_ids.to(device)
+        return input_ids.to("mps")
     elif is_torch_xpu_available():
         return input_ids.to("xpu:0")
     elif is_torch_npu_available():
@@ -211,12 +210,15 @@ def set_manual_seed(seed):
         seed = random.randint(1, 2**31)
 
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
+    if torch.backends.mps.is_available():
+        torch.mps.manual_seed(seed)
+    elif torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     elif is_torch_xpu_available():
         torch.xpu.manual_seed_all(seed)
-    elif is_torch_npu_available():
-        torch.npu.manual_seed_all(seed)
+#   torch.xpu.manual_seed_all does not exist.
+#    elif is_torch_npu_available():
+#        torch.npu.manual_seed_all(seed)
 
     return seed
 
@@ -408,8 +410,6 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
     """
     For models that do not use the transformers library for sampling
     """
-    seed = set_manual_seed(state['seed'])
-
     t0 = time.time()
     reply = ''
     try:
@@ -433,7 +433,7 @@ def generate_reply_custom(question, original_question, seed, state, stopping_str
         return
 
 
-def print_prompt(prompt, max_chars=10000):
+def print_prompt(prompt, max_chars=50000):
     DARK_YELLOW = "\033[38;5;3m"
     RESET = "\033[0m"
 

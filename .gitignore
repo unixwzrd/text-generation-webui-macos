@@ -59,4 +59,8 @@ extensions/alltalk_tts
 extensions/elevenlabs_tts/outputs/*.wav
 extensions/elevenlabs_tts/outputs/*.mp3
 start-webui.sh
-instruction-templates/.Llama-2.yaml.un~
+.*.un~
+.*.sw?
+
+files-to-sync.txt
+rsync-exclude.lst

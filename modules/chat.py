@@ -102,7 +102,8 @@ def generate_chat_prompt(user_input, state, **kwargs):
     if state['mode'] == 'instruct':
         renderer = instruct_renderer
         if state['custom_system_message'].strip() != '':
-            messages.append({"role": "system", "content": state['custom_system_message']})
+            context = replace_character_names(state['custom_system_message'], state['name1'], state['name2'])
+            messages.append({"role": "system", "content": context })
     else:
         renderer = chat_renderer
         if state['context'].strip() != '' or state['user_bio'].strip() != '':
@@ -140,7 +141,8 @@ def generate_chat_prompt(user_input, state, **kwargs):
         if state['mode'] == 'chat-instruct':
             outer_messages = []
             if state['custom_system_message'].strip() != '':
-                outer_messages.append({"role": "system", "content": state['custom_system_message']})
+                context = replace_character_names(state['custom_system_message'], state['name1'], state['name2'])
+                outer_messages.append({"role": "system", "content": context })
 
             prompt = remove_extra_bos(prompt)
             command = state['chat-instruct_command']
@@ -353,7 +355,8 @@ def chatbot_wrapper(text, state, regenerate=False, _continue=False, loading_mess
 
 def impersonate_wrapper(text, state):
 
-    static_output = chat_html_wrapper(state['history'], state['name1'], state['name2'], state['mode'], state['chat_style'], state['character_menu'])
+    static_output = chat_html_wrapper(state['history'], state['name1'], state['name2'], state['mode'],
+                                      state['visible_dots'], state['chat_style'], state['character_menu'])
 
     if shared.model_name == 'None' or shared.model is None:
         logger.error("No model is loaded! Select one in the Model tab.")
@@ -412,7 +415,8 @@ def generate_chat_reply_wrapper(text, state, regenerate=False, _continue=False):
         send_dummy_reply(state['start_with'], state)
 
     for i, history in enumerate(generate_chat_reply(text, state, regenerate, _continue, loading_message=True, for_ui=True)):
-        yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['chat_style'], state['character_menu']), history
+        yield chat_html_wrapper(history, state['name1'], state['name2'], state['mode'], state['visible_dots'],
+                                state['chat_style'], state['character_menu']), history
 
 
 def remove_last_message(history):
@@ -462,8 +466,8 @@ def send_dummy_reply(text, state):
     return history
 
 
-def redraw_html(history, name1, name2, mode, style, character, reset_cache=False):
-    return chat_html_wrapper(history, name1, name2, mode, style, character, reset_cache=reset_cache)
+def redraw_html(history, name1, name2, mode, visible_dots, style, character, reset_cache=False):
+    return chat_html_wrapper(history, name1, name2, mode, visible_dots, style, character, reset_cache=reset_cache)
 
 
 def start_new_chat(state):
