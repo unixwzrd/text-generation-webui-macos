@@ -422,8 +422,10 @@ def clear_torch_cache():
     if not shared.args.cpu:
         if is_xpu_available():
             torch.xpu.empty_cache()
-        else:
+        if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
 
 
 def unload_model():

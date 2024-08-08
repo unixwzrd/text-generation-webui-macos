@@ -146,24 +146,26 @@ targetElement.addEventListener("scroll", function() {
 const observer = new MutationObserver(function(mutations) {
   updateCssProperties();
 
-    const firstChild = targetElement.children[0];
-    if (firstChild.classList.contains("generating")) {
-      // typing.parentNode.classList.add("visible-dots");
-      document.getElementById("stop").style.display = "flex";
-      document.getElementById("Generate").style.display = "none";
-    } else {
-      // typing.parentNode.classList.remove("visible-dots");
-      document.getElementById("stop").style.display = "none";
-      document.getElementById("Generate").style.display = "flex";
-    }
+  const firstChild = targetElement.children[0];
+  const visibleDots = document.getElementById("visible_dots").checked; // Get the checkbox state
 
+  if (firstChild.classList.contains("generating")) {
+    if (visibleDots) {
+      typing.parentNode.classList.add("visible-dots");
+    }
+    document.getElementById("stop").style.display = "flex";
+    document.getElementById("Generate").style.display = "none";
+  } else {
+    typing.parentNode.classList.remove("visible-dots");
+    document.getElementById("stop").style.display = "none";
+    document.getElementById("Generate").style.display = "flex";
+  }
 
   doSyntaxHighlighting();
 
-  if(!isScrolled) {
+  if (!isScrolled) {
     targetElement.scrollTop = targetElement.scrollHeight;
   }
-
 });
 
 // Configure the observer to watch for changes in the subtree and attributes
