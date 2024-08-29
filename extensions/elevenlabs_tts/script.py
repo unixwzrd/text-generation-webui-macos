@@ -2,11 +2,12 @@ import re
 import time
 from pathlib import Path
 
-import elevenlabs
+from elevenlabs import play, save
+from elevenlabs.client import ElevenLabs
 import gradio as gr
 
 from modules import chat, shared, ui_chat
-from modules.utils import gradio
+from modules.utils import gradio as gr_utils
 from modules.logging_colors import logger
 
 params = {
@@ -20,35 +21,36 @@ params = {
 
 voices = None
 wav_idx = 0
-LANG_MODELS = ['eleven_monolingual_v1', 'eleven_multilingual_v1']
+client = None
+LANG_MODELS = ['eleven_monolingual_v1', 'eleven_multilingual_v2']
 
 _elevenlabs_tts_model = None
 
-
 def update_api_key(key):
+    global client
     params['api_key'] = key
     if key is not None:
-        elevenlabs.set_api_key(key)
-
+        client = ElevenLabs(api_key=key)
+    return client
 
 def refresh_voices():
-    global params
-    your_voices = elevenlabs.voices()
-    voice_names = [voice.name for voice in your_voices]
+    global client
+    if client is None:
+        client = update_api_key(params['api_key'])
+    response = client.voices.get_all(show_legacy=True)
+    female_voices = [voice for voice in response.voices if voice.labels.get('gender') == 'female']
+    print(f"Available voices: {female_voices}")
+    voice_names = [voice.name for voice in female_voices]
     return voice_names
-
 
 def refresh_voices_dd():
     all_voices = refresh_voices()
     return gr.Dropdown.update(value=all_voices[0], choices=all_voices)
 
-
 def remove_tts_from_history(history):
     for i, entry in enumerate(history['internal']):
         history['visible'][i] = [history['visible'][i][0], entry[1]]
-
     return history
-
 
 def toggle_text_in_history(history):
     for i, entry in enumerate(history['visible']):
@@ -59,42 +61,33 @@ def toggle_text_in_history(history):
                 history['visible'][i] = [history['visible'][i][0], f"{visible_reply.split('</audio>')[0]}</audio>\n\n{reply}"]
             else:
                 history['visible'][i] = [history['visible'][i][0], f"{visible_reply.split('</audio>')[0]}</audio>"]
-
     return history
-
 
 def remove_surrounded_chars(string):
     # this expression matches to 'as few symbols as possible (0 upwards) between any asterisks' OR
     # 'as few symbols as possible (0 upwards) between an asterisk and the end of the string'
-    return re.sub('\*[^\*]*?(\*|$)', '', string)
+    return re.sub(r'\*[^\*]*?(\*|$)', '', string)
 
 
 def state_modifier(state):
     if not params['activate']:
         return state
-
     state['stream'] = False
     return state
-
 
 def input_modifier(string):
     if not params['activate']:
         return string
-
     shared.processing_message = "*Is recording a voice message...*"
     return string
 
-
 def history_modifier(history):
-    # Remove autoplay from the last reply
     if len(history['internal']) > 0:
         history['visible'][-1] = [
             history['visible'][-1][0],
             history['visible'][-1][1].replace('controls autoplay>', 'controls>')
         ]
-
     return history
-
 
 def output_modifier(string, state):
     global params, wav_idx
@@ -111,20 +104,20 @@ def output_modifier(string, state):
     if string == '':
         string = 'empty reply, try regenerating'
 
-    output_file = Path(f'extensions/elevenlabs_tts/outputs/{state["character_menu"]}_{int(time.time())}.mp3'.format(wav_idx))
+    output_file = Path(f'extensions/elevenlabs_tts/outputs/{state["character_menu"]}_{int(time.time())}.mp3')
     print(f'Outputting audio to {str(output_file)}')
     try:
-        audio = elevenlabs.generate(text=string, voice=params['selected_voice'], model=params['model'])
-        elevenlabs.save(audio, str(output_file))
+        audio = client.generate(text=string, voice=params['selected_voice'], model=params['model'])
+        save(audio, str(output_file))
 
         autoplay = 'autoplay' if params['autoplay'] else ''
         string = f'<audio src="file/{output_file.as_posix()}" controls {autoplay}></audio>'
         wav_idx += 1
-    except elevenlabs.api.error.UnauthenticatedRateLimitError:
+    except client.api.error.UnauthenticatedRateLimitError:
         string = "🤖 ElevenLabs Unauthenticated Rate Limit Reached - Please create an API key to continue\n\n"
-    except elevenlabs.api.error.RateLimitError:
+    except client.api.error.RateLimitError:
         string = "🤖 ElevenLabs API Tier Limit Reached\n\n"
-    except elevenlabs.api.error.APIError as err:
+    except client.api.error.APIError as err:
         string = f"🤖 ElevenLabs Error: {err}\n\n"
 
     if params['show_text']:
@@ -132,7 +125,6 @@ def output_modifier(string, state):
 
     shared.processing_message = "*Is typing...*"
     return string
-
 
 def ui():
     global _elevenlabs_tts_model, voices
@@ -176,25 +168,23 @@ def ui():
         convert.click(lambda: [gr.update(visible=True), gr.update(visible=False), gr.update(visible=True)], None, convert_arr)
         convert_confirm.click(
             lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)], None, convert_arr).then(
-            remove_tts_from_history, gradio('history'), gradio('history')).then(
-            chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
-            chat.redraw_html, gradio(ui_chat.reload_arr), gradio('display'))
+            remove_tts_from_history, gr_utils('history'), gr_utils('history')).then(
+            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None).then(
+            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display'))
 
         convert_cancel.click(lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)], None, convert_arr)
 
         # Toggle message text in history
         show_text.change(
             lambda x: params.update({"show_text": x}), show_text, None).then(
-            toggle_text_in_history, gradio('history'), gradio('history')).then(
-            chat.save_history, gradio('history', 'unique_id', 'character_menu', 'mode'), None).then(
-            chat.redraw_html, gradio(ui_chat.reload_arr), gradio('display'))
+            toggle_text_in_history, gr_utils('history'), gr_utils('history')).then(
+            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None).then(
+            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display'))
 
     # Event functions to update the parameters in the backend
     activate.change(lambda x: params.update({'activate': x}), activate, None)
     voice.change(lambda x: params.update({'selected_voice': x}), voice, None)
     api_key.change(update_api_key, api_key, None)
     _elevenlabs_tts_model.change(lambda x: params.update({'model': x}), _elevenlabs_tts_model, None)
-    # connect.click(check_valid_api, [], connection_status)
     refresh.click(refresh_voices_dd, [], voice)
-    # Event functions to update the parameters in the backend
     autoplay.change(lambda x: params.update({"autoplay": x}), autoplay, None)
