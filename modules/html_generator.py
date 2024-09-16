@@ -42,15 +42,58 @@ def fix_newlines(string):
     return string
 
 
+def replace_quotes(text):
+
+    # Define a list of quote pairs (opening and closing), using HTML entities
+    quote_pairs = [
+        ('&quot;', '&quot;'),  # Double quotes
+        ('&ldquo;', '&rdquo;'),  # Unicode left and right double quotation marks
+        ('&lsquo;', '&rsquo;'),  # Unicode left and right single quotation marks
+        ('&laquo;', '&raquo;'),  # French quotes
+        ('&bdquo;', '&ldquo;'),  # German quotes
+        ('&lsquo;', '&rsquo;'),  # Alternative single quotes
+        ('&#8220;', '&#8221;'),  # Unicode quotes (numeric entities)
+        ('&#x201C;', '&#x201D;'),  # Unicode quotes (hex entities)
+    ]
+
+    # Create a regex pattern that matches any of the quote pairs, including newlines
+    pattern = '|'.join(f'({re.escape(open_q)})(.*?)({re.escape(close_q)})' for open_q, close_q in quote_pairs)
+
+    # Replace matched patterns with <q> tags, keeping original quotes
+    replaced_text = re.sub(pattern, lambda m: f'<q>{m.group(1)}{m.group(2)}{m.group(3)}</q>', text, flags=re.DOTALL)
+
+    return replaced_text
+
+
 def replace_blockquote(m):
     return m.group().replace('\n', '\n> ').replace('\\begin{blockquote}', '').replace('\\end{blockquote}', '')
 
 
-@functools.lru_cache(maxsize=4096)
+@functools.lru_cache(maxsize=None)
 def convert_to_markdown(string):
 
-    if not isinstance(string, (str, bytes)):
-        string = str(string)  # convert `string` to a string if it's not already
+    # Make \[ \]  LaTeX equations inline
+    pattern = r'^\s*\\\[\s*\n([\s\S]*?)\n\s*\\\]\s*$'
+    replacement = r'\\[ \1 \\]'
+    string = re.sub(pattern, replacement, string, flags=re.MULTILINE)
+
+    # Escape backslashes
+    string = string.replace('\\', '\\\\')
+
+    # Quote to <q></q>
+    string = replace_quotes(string)
+
+    # Make \[ \]  LaTeX equations inline
+    pattern = r'^\s*\\\[\s*\n([\s\S]*?)\n\s*\\\]\s*$'
+    replacement = r'\\[ \1 \\]'
+    string = re.sub(pattern, replacement, string, flags=re.MULTILINE)
+
+    # Escape backslashes
+    string = string.replace('\\', '\\\\')
+
+    # Quote to <q></q>
+    string = replace_quotes(string)
+
     # Blockquote
     string = re.sub(r'(^|[\n])&gt;', r'\1>', string)
     pattern = re.compile(r'\\begin{blockquote}(.*?)\\end{blockquote}', re.DOTALL)
@@ -71,12 +114,27 @@ def convert_to_markdown(string):
 
     result = ''
     is_code = False
+    is_latex = False
     for line in string.split('\n'):
-        if line.lstrip(' ').startswith('```'):
+        stripped_line = line.strip()
+
+        if stripped_line.startswith('```'):
             is_code = not is_code
+        elif stripped_line.startswith('$$'):
+            is_latex = not is_latex
+        elif stripped_line.endswith('$$'):
+            is_latex = False
+        elif stripped_line.startswith('\\\\['):
+            is_latex = True
+        elif stripped_line.startswith('\\\\]'):
+            is_latex = False
+        elif stripped_line.endswith('\\\\]'):
+            is_latex = False
 
         result += line
-        if is_code or line.startswith('|'):  # Don't add an extra \n for tables or code
+
+        # Don't add an extra \n for tables, code, or LaTeX
+        if is_code or is_latex or line.startswith('|'):
             result += '\n'
         else:
             result += '\n\n'
@@ -87,15 +145,20 @@ def convert_to_markdown(string):
 
     # Unfinished list, like "\n1.". A |delete| string is added and then
     # removed to force a <ol> or <ul> to be generated instead of a <p>.
-    if re.search(r'(\n\d+\.?|\n\*\s*)$', result):
+    list_item_pattern = r'(\n\d+\.?|\n\s*[-*+]\s*([*_~]{1,3})?)$'
+    if re.search(list_item_pattern, result):
         delete_str = '|delete|'
 
         if re.search(r'(\d+\.?)$', result) and not result.endswith('.'):
             result += '.'
 
-        result = re.sub(r'(\n\d+\.?|\n\*\s*)$', r'\g<1> ' + delete_str, result)
+        # Add the delete string after the list item
+        result = re.sub(list_item_pattern, r'\g<1> ' + delete_str, result)
 
+        # Convert to HTML using markdown
         html_output = markdown.markdown(result, extensions=['fenced_code', 'tables'])
+
+        # Remove the delete string from the HTML output
         pos = html_output.rfind(delete_str)
         if pos > -1:
             html_output = html_output[:pos] + html_output[pos + len(delete_str):]
@@ -121,6 +184,7 @@ def convert_to_markdown_wrapped(string, use_cache=True):
 
 
 def generate_basic_html(string):
+    convert_to_markdown.cache_clear()
     string = convert_to_markdown(string)
     string = f'<style>{readable_css}</style><div class="readable-container">{string}</div>'
     return string

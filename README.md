@@ -1,10 +1,10 @@
-# Text generation web UI - Modified for macOS and Apple Silicon 2024-05-10 Edition
+# Text generation web UI - Modified for macOS and Apple Silicon 2024-09-15 Edition
 
 ## This is the original oobabooga text generation webui modified to run on macOS
 
 This is a dev release, documentation under re-work, there will probably be changes before final release.
 
-This is a development version and I have not added many changes I had planned. Please ||feel|| free to use at your own risk as there may be bugs not yet found.
+This is a development version and I have not added many changes I had planned. Please *feel* free to use at your own risk as there may be bugs not yet found.
 
 Items Added to this version.
  * Added ElevenLabs extension back
@@ -41,30 +41,13 @@ There are CUDA issues to work out, and I'd like to find a better way around this
 
 |   Hardware                       | Memory | macOS Name | Version |
 |----------------------------------|--------|------------|---------|
-| MacBook Pro 16" M2 Max Processor |  96GB  |  Sonoma    | 14.5    |
+| MacBook Pro 16" M2 Max Processor |  96GB  |  Sonoma    | 14.6.1  |
 
-- [Text generation web UI - Modified for macOS and Apple Silicon 2024-05-10 Edition](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-05-10-edition)
+- [Text generation web UI - Modified for macOS and Apple Silicon 2024-09-15 Edition](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-09-15-edition)
   - [This is the original oobabooga text generation webui modified to run on macOS](#this-is-the-original-oobabooga-text-generation-webui-modified-to-run-on-macos)
   - [All the features of the UI will run on macOS and have been tested on the following configurations, using only llama.cpp](#all-the-features-of-the-ui-will-run-on-macos-and-have-been-tested-on-the-following-configurations-using-only-llamacpp)
   - [Features](#features)
-  - [Installation process](#installation-process)
-    - [Install Miniconda](#install-miniconda)
-      - [Download the miniconda installer](#download-the-miniconda-installer)
-  - [Startup Options](#startup-options)
-      - [Basic settings](#basic-settings)
-      - [Model loader](#model-loader)
-      - [Accelerate/transformers](#acceleratetransformers)
-      - [bitsandbytes 4-bit](#bitsandbytes-4-bit)
-      - [llama.cpp](#llamacpp)
-      - [ExLlamav2](#exllamav2)
-      - [AutoGPTQ](#autogptq)
-      - [GPTQ-for-LLaMa](#gptq-for-llama)
-      - [HQQ](#hqq)
-      - [DeepSpeed](#deepspeed)
-      - [RoPE (for llama.cpp, ExLlamaV2, and transformers)](#rope-for-llamacpp-exllamav2-and-transformers)
-      - [Gradio](#gradio)
-      - [API](#api)
-      - [Multimodal](#multimodal)
+  - [Installation process Overview](#installation-process-overview)
   - [Documentation](#documentation)
   - [Downloading models](#downloading-models)
   - [Contributing](#contributing)
@@ -103,168 +86,8 @@ oobabooga's goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https:/
 
   **Updated Installation Instructions** for libraries in the [oobabooga-macOS Quickstart](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS_Apple_Silicon_QuickStart.m1) and the longer [Building Apple Silicon Support](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
 
-```bash
-#!/bin/bash
-## These instructions assume you are using the Bash shell. I also sugget getting a copy
-## of iTerm2, it will make your life better, iut is much better than the default terminal
-## on macOS.
-##
-## If you are using zsh, do this first, do it even if you are running bash,
-## it will not hurt anything.
+  **Updated Long Version of oobabooga-macOS Installation Instructions** for libraries in the [Building Apple Silicon Support for oobabooga text-generation-webui](https://github.com/unixwzrd/oobabooga-macOS/blob/main/macOS-Install.md)
 
-## This will give you a login shell with bash.
-exec bash -l
-
-cd "${HOME}"
-
-umask 022
-
-### Choose a target directory for everything to be put into, I'm using "${HOME}/projects/ai-projects" You
-### may use whatever you wish. This must be exported because we will exec a new login shell later.
-export TARGET_DIR="${HOME}/projects/ai-projects"
-
-mkdir -p "${TARGET_DIR}"
-cd "${TARGET_DIR}"
-
-# This will add to your path and DYLD_LIBRARY_PATH if they aren't already seyt up.
-# export PATH=${HOME}/local/bin
-# export DYLD_LIBRARY_PATH=${HOME}/local/lib:$DYLD_LIBRARY_PATH
-
-### Be sure to add ${HOME}/local/bin to your path  **Add to your .profile, .bashrc, etc...**
-export PATH=${HOME}/local/bin:${PATH}
-
-### Thwe following Sed line will add it permanantly to your .bashrc if it's not already there.
-sed -i.bak '
-  /export PATH=/ {
-    h; s|$|:${HOME}/local/bin|
-  }
-  ${
-    x; /./ { x; q0 }
-    x; s|.*|export PATH=${HOME}/local/bin:\$PATH|; h
-  }
-  /export DYLD_LIBRARY_PATH=/ {
-    h; s|$|:${HOME}/local/lib|
-  }
-  ${
-    x; /./ { x; q0 }
-    x; s|.*|export DYLD_LIBRARY_PATH=${HOME}/local/lib:\$SYLD_LIBRARY_PATH|; h
-  }
-' ~/.bashrc && source ~/.bashrc
-
-## Install Miniconda
-
-### Download the miniconda installer
-curl  https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o miniconda.sh
-
-### Run the installer in non-destructive mode in order to preserve any existing installation.
-sh miniconda.sh -b -u
-. "${HOME}/miniconda3/bin/activate"
-
-conda init $(basename "${SHELL}")
-conda update -n base -c defaults conda -y
-
-#### Get a new login shell no that conda is activated to your shell profile.
-exec bash -l
-
-umask 022
-
-#### Just in case your startup login environment scripts do some thing like change to another directory.
-#### Get back into teh target directory for teh build.
-cd "${TARGET_DIR}"
-
-#### Set the name of the VENV to whatever you wish it to be. This will be used later when the procedure
-#### creates a script for sourcing in the Conda environment and activating the one set here when you installed.
-export MACOS_LLAMA_ENV="macOS-llama-env"
-
-#### Create the base Python 3.10 and the llama-env VENV.
-conda create -n ${MACOS_LLAMA_ENV} python=3.10 -y
-conda activate ${MACOS_LLAMA_ENV}
-
-## Build and install CMake
-
-### Clone the CMake repository, build, and install CMake
-git clone https://github.com/Kitware/CMake.git
-cd CMake
-git checkout tags/v3.29.3
-mkdir build
-cd build
-
-### This will configure the installation of cmake to be in your home directory under local, rather than /usr/local
-../bootstrap --prefix=${HOME}/local
-make -j
-make -j test
-make install
-
-### Verify the installation
-which cmake       # Should say $HOME/local/bin
-### Verify you are running cmake z3.29.3
-cmake --version
-cd  "${TARGET_DIR}"
-
-
-## Get my oobabooga and checkout macOS-test branch
-git clone https://github.com/unixwzrd/text-generation-webui-macos.git textgen-macOS
-cd textgen-macOS
-git checkout main
-pip install -r requirements.txt
-
-## llamacpp-python
-export CMAKE_ARGS="-DLLAMA_METAL=on"
-export FORCE_CMAKE=1
-export PATH=/usr/local/bin:$PATH  # Ensure the correct cmake is used
-pip install llama-cpp-python --force-reinstall --no-cache --no-binary :all: --compile --no-deps --no-build-isolation
-
-## Pip install from daily build
-pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu --force-reinstall --no-deps
-
-## NumPy Rebuild with Pip
-export CFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers -Wl,-framework -Wl,Accelerate -framework Accelerate"
-pip install numpy==1.26.* --force-reinstall --no-deps --no-cache --no-binary :all: --no-build-isolation --compile -Csetup-args=-Dblas=accelerate -Csetup-args=-Dlapack=accelerate -Csetup-args=-Duse-ilp64=true
-
-## CTransformers
-export CFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers -Wl,-framework -Wl,Accelerate -framework Accelerate"
-export CT_METAL=1
-pip install ctransformers --no-binary :all: --no-deps --no-build-isolation --compile --force-reinstall
-
-### Unset all the stuff we set while building.
-unset CMAKE_ARGS FORCE_CMAKE CFLAGS CT_METAL
-
-
-## This will create a startup script whcih shoudl be clickable in finder.
-
-### Set the startup options you wish to use
-
-# Add any startup options you wich to this here:
-START_OPTIONS=
-#START_OPTIONS="--verbose "
-#START_OPTIONS="--verbose --listen"
-
-cat <<_EOT_ > start-webui.sh
-#!/bin/bash
-
-# >>> conda initialize >>>
-__conda_setup="$('${HOME}/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-  eval "$__conda_setup"
-else
-  if [ -f "${HOME}/miniconda3/etc/profile.d/conda.sh" ]; then
-    . "${HOME}/miniconda3/etc/profile.d/conda.sh"
-  else
-    export PATH="${HOME}/miniconda3/bin:$PATH"
-  fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-cd "${TARGET_DIR}/textgen-macOS"
-
-conda activate ${MACOS_LLAMA_ENV}
-
-python server.py ${START_OPTIONS}
-_EOT_
-
-
-chmod +x start-webui.sh```
 <details>
 <summary>
 <b>List of command-line flags</b>
