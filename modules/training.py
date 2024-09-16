@@ -165,7 +165,7 @@ def create_ui():
                             stride_length = gr.Slider(label='Stride', minimum=0, maximum=32768, value=512, step=256, info='Used to make the evaluation faster at the cost of accuracy. 1 = slowest but most accurate. 512 is a common value.')
 
                         with gr.Column():
-                            max_length = gr.Slider(label='max_length', minimum=0, maximum=shared.settings['truncation_length_max'], value=0, step=256, info='The context for each evaluation. If set to 0, the maximum context length for the model will be used.')
+                            max_length = gr.Number(label='max_length', precision=0, step=256, value=0, info='The context for each evaluation. If set to 0, the maximum context length for the model will be used.')
 
                     with gr.Row():
                         start_current_evaluation = gr.Button("Evaluate loaded model", interactive=not mu)
@@ -292,12 +292,6 @@ def calc_trainable_parameters(model):
 
 def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: bool, k_proj_en: bool, o_proj_en: bool, gate_proj_en: bool, down_proj_en: bool, up_proj_en: bool, save_steps: int, micro_batch_size: int, batch_size: int, epochs: int, learning_rate: str, lr_scheduler_type: str, lora_rank: int, lora_alpha: int, lora_dropout: float, cutoff_len: int, dataset: str, eval_dataset: str, format: str, eval_steps: int, raw_text_file: str, overlap_len: int, newline_favor_len: int, higher_rank_limit: bool, warmup_steps: int, optimizer: str, hard_cut_string: str, train_only_after: str, stop_at_loss: float, add_eos_token: bool, min_chars: int, report_to: str):
 
-    if shared.args.monkey_patch:
-        from alpaca_lora_4bit.monkeypatch.peft_tuners_lora_monkey_patch import (
-            replace_peft_model_with_int4_lora_model
-        )
-        replace_peft_model_with_int4_lora_model()
-
     global WANT_INTERRUPT
     WANT_INTERRUPT = False
 
@@ -328,10 +322,6 @@ def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: 
             logger.warning(f"LoRA training has only currently been validated for LLaMA, OPT, GPT-J, and GPT-NeoX models. (Found model type: {model_type})")
 
         time.sleep(5)
-
-    if shared.args.loader == 'GPTQ-for-LLaMa' and not shared.args.monkey_patch:
-        yield "LoRA training with GPTQ-for-LLaMa requires loading with `--monkey-patch`"
-        return
 
     if cutoff_len <= 0 or micro_batch_size <= 0 or batch_size <= 0 or actual_lr <= 0 or lora_rank <= 0 or lora_alpha <= 0:
         yield "Cannot input zeroes."
@@ -552,15 +542,6 @@ def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: 
     except:
         yield traceback.format_exc().replace('\n', '\n\n')
         return
-
-    if shared.args.monkey_patch:
-        from alpaca_lora_4bit.autograd_4bit import Autograd4bitQuantLinear
-        from alpaca_lora_4bit.models import Linear4bitLt
-        for _, m in lora_model.named_modules():
-            if isinstance(m, Autograd4bitQuantLinear) or isinstance(m, Linear4bitLt):
-                if m.is_v1_model:
-                    m.zeros = m.zeros.half()
-                m.scales = m.scales.half()
 
     class Tracked():
         def __init__(self):

@@ -4,6 +4,7 @@ import io
 
 import requests
 
+from modules import shared
 from modules.logging_colors import logger
 
 original_open = open
@@ -53,13 +54,14 @@ def my_open(*args, **kwargs):
         )
         file_contents = file_contents.replace(b"cdnjs.cloudflare.com", b"127.0.0.1")
         file_contents = file_contents.replace(
-            b'</head>',
-            b'\n    <script src="file/js/katex/katex.min.js"></script>'
-            b'\n    <script src="file/js/katex/auto-render.min.js"></script>'
-            b'\n    <script src="file/js/highlightjs/highlight.min.js"></script>'
-            b'\n    <script src="file/js/highlightjs/highlightjs-copy.min.js"></script>'
-            b'\n    <script>hljs.addPlugin(new CopyButtonPlugin());</script>'
-            b'\n  </head>'
+            '</head>',
+            '\n    <script src="file/js/katex/katex.min.js"></script>'
+            '\n    <script src="file/js/katex/auto-render.min.js"></script>'
+            '\n    <script src="file/js/highlightjs/highlight.min.js"></script>'
+            '\n    <script src="file/js/highlightjs/highlightjs-copy.min.js"></script>'
+            f'\n    <link id="highlight-css" rel="stylesheet" href="file/css/highlightjs/{"github-dark" if shared.settings["dark_theme"] else "github"}.min.css">'
+            '\n    <script>hljs.addPlugin(new CopyButtonPlugin());</script>'
+            '\n  </head>'
         )
 
         return io.BytesIO(file_contents)  # return bytes
