@@ -1,3 +1,5 @@
+# **NOT-SUPPORTED macOS and Apple Silicon** Docker
+
 Docker Compose is a way of installing and launching the web UI in an isolated Ubuntu image using only a few commands.
 
 ## Installing Docker Compose
@@ -19,7 +21,7 @@ Use these commands to launch the image:
 
 ```
 cd text-generation-webui
-ln -s docker/{nvidia/Dockerfile,docker-compose.yml,.dockerignore} .
+ln -s docker/{nvidia/Dockerfile,nvidia/docker-compose.yml,.dockerignore} .
 cp docker/.env.example .env
 # Edit .env and set TORCH_CUDA_ARCH_LIST based on your GPU model
 docker compose up --build
@@ -92,7 +94,7 @@ newgrp docker
 ```bash
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/ubuntu22.04/amd64 /" | \
-sudo tee /etc/apt/sources.list.d/nvidia.list > /dev/null 
+sudo tee /etc/apt/sources.list.d/nvidia.list > /dev/null
 sudo apt update
 sudo apt install nvidia-docker2 nvidia-container-runtime -y
 sudo systemctl restart docker

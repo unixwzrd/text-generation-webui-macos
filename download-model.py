@@ -29,6 +29,7 @@ base = os.environ.get("HF_ENDPOINT") or "https://huggingface.co"
 class ModelDownloader:
     def __init__(self, max_retries=5):
         self.max_retries = max_retries
+        self.session = self.get_session()
 
     def get_session(self):
         session = requests.Session()
@@ -72,7 +73,7 @@ class ModelDownloader:
         return model, branch
 
     def get_download_links_from_huggingface(self, model, branch, text_only=False, specific_file=None):
-        session = self.get_session()
+        session = self.session
         page = f"/api/models/{model}/tree/{branch}"
         cursor = b""
 
@@ -167,8 +168,11 @@ class ModelDownloader:
         is_llamacpp = has_gguf and specific_file is not None
         return links, sha256, is_lora, is_llamacpp
 
-    def get_output_folder(self, model, branch, is_lora, is_llamacpp=False):
-        base_folder = 'models' if not is_lora else 'loras'
+    def get_output_folder(self, model, branch, is_lora, is_llamacpp=False, model_dir=None):
+        if model_dir:
+            base_folder = model_dir
+        else:
+            base_folder = 'models' if not is_lora else 'loras'
 
         # If the model is of type GGUF, save directly in the base_folder
         if is_llamacpp:
@@ -189,7 +193,7 @@ class ModelDownloader:
         attempt = 0
         while attempt < max_retries:
             attempt += 1
-            session = self.get_session()
+            session = self.session
             headers = {}
             mode = 'wb'
 
@@ -209,11 +213,15 @@ class ModelDownloader:
                     total_size = int(r.headers.get('content-length', 0))
                     block_size = 1024 * 1024  # 1MB
 
+                    filename_str = str(filename)  # Convert PosixPath to string if necessary
+
                     tqdm_kwargs = {
                         'total': total_size,
-                        'unit': 'iB',
+                        'unit': 'B',
                         'unit_scale': True,
-                        'bar_format': '{l_bar}{bar}| {n_fmt}/{total_fmt} {rate_fmt}'
+                        'unit_divisor': 1024,
+                        'bar_format': '{desc}{percentage:3.0f}%|{bar:50}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]',
+                        'desc': f"{filename_str}: "
                     }
 
                     if 'COLAB_GPU' in os.environ:
@@ -230,7 +238,7 @@ class ModelDownloader:
                                 t.update(len(data))
                                 if total_size != 0 and self.progress_bar is not None:
                                     count += len(data)
-                                    self.progress_bar(float(count) / float(total_size), f"{filename}")
+                                    self.progress_bar(float(count) / float(total_size), f"{filename_str}")
 
                     break  # Exit loop if successful
             except (RequestException, ConnectionError, Timeout) as e:
@@ -304,7 +312,8 @@ if __name__ == '__main__':
     parser.add_argument('--threads', type=int, default=4, help='Number of files to download simultaneously.')
     parser.add_argument('--text-only', action='store_true', help='Only download text files (txt/json).')
     parser.add_argument('--specific-file', type=str, default=None, help='Name of the specific file to download (if not provided, downloads all).')
-    parser.add_argument('--output', type=str, default=None, help='The folder where the model should be saved.')
+    parser.add_argument('--output', type=str, default=None, help='Save the model files to this folder.')
+    parser.add_argument('--model-dir', type=str, default=None, help='Save the model files to a subfolder of this folder instead of the default one (text-generation-webui/models).')
     parser.add_argument('--clean', action='store_true', help='Does not resume the previous download.')
     parser.add_argument('--check', action='store_true', help='Validates the checksums of model files.')
     parser.add_argument('--max-retries', type=int, default=5, help='Max retries count when get error in download time.')
@@ -333,7 +342,7 @@ if __name__ == '__main__':
     if args.output:
         output_folder = Path(args.output)
     else:
-        output_folder = downloader.get_output_folder(model, branch, is_lora, is_llamacpp=is_llamacpp)
+        output_folder = downloader.get_output_folder(model, branch, is_lora, is_llamacpp=is_llamacpp, model_dir=args.model_dir)
 
     if args.check:
         # Check previously downloaded files

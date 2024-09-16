@@ -43,7 +43,6 @@
 }
 
 #download-label, #upload-label {
-    min-height: 0
 }
 
 .dark svg {
@@ -60,10 +59,6 @@ ol li p, ul li p {
 
 #chat-tab, #default-tab, #notebook-tab, #parameters, #chat-settings, #lora, #training-tab, #model-tab, #session-tab {
     border: 0;
-}
-
-.gradio-container-3-18-0 .prose * h1, h2, h3, h4 {
-    color: white;
 }
 
 .gradio-container {
@@ -95,8 +90,8 @@ gradio-app > :first-child {
 }
 
 .header_bar {
-    background-color: #f7f7f7;
-    box-shadow: 0 0px 3px rgba(22 22 22 / 35%);
+    background-color: #f4f4f4;
+    box-shadow: 0 0 3px rgba(22 22 22 / 35%);
     margin-bottom: 0;
     overflow-x: scroll;
     margin-left: calc(-1 * var(--size-4));
@@ -221,6 +216,7 @@ button {
 
 .pretty_scrollbar::-webkit-scrollbar {
     width: 7px;
+    height: 7px;
 }
 
 .pretty_scrollbar::-webkit-scrollbar-track {
@@ -243,6 +239,10 @@ button {
 
 .dark .pretty_scrollbar::-webkit-resizer {
     background: #374151;
+}
+
+.pretty_scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 audio {
@@ -331,6 +331,11 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
         padding-left: 0;
         padding-right: 0;
     }
+
+    .chat {
+        padding-left: 0;
+        padding-right: 0;
+    }
 }
 
 .chat {
@@ -368,6 +373,10 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
     }
 }
 
+.chat-parent .prose {
+    visibility: visible;
+}
+
 .old-ui .chat-parent {
     height: calc(100dvh - 192px - var(--header-height) - var(--input-delta));
     margin-bottom: var(--input-delta) !important;
@@ -386,7 +395,23 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
 
 .chat .message:last-child {
     margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+    padding-bottom: 15px !important;
+}
+
+.message-body h1,
+.message-body h2,
+.message-body h3,
+.message-body h4 {
+    color: var(--body-text-color);
+    margin: 20px 0 10px 0;
+}
+
+.dark .message q {
+    color: #f5b031;
+}
+
+.message-body q::before, .message-body q::after {
+    content: "";
 }
 
 .message-body li {
@@ -437,8 +462,13 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
     border-radius: 5px;
     font-size: 82%;
     padding: 1px 3px;
+    background: white !important;
+    color: #1f2328;
+}
+
+.dark .message-body code {
     background: #0d1117 !important;
-    color: rgb(201, 209, 217);
+    color: rgb(201 209 217);
 }
 
 .message-body pre > code {
@@ -484,19 +514,19 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
         width: 100%;
         overflow-y: visible;
     }
-    
+
     .message {
         break-inside: avoid;
     }
-    
+
     .gradio-container {
         overflow: visible;
     }
-    
+
     .tab-nav {
         display: none !important;
     }
-    
+
     #chat-tab > :first-child {
         max-width: unset;
     }
@@ -505,7 +535,7 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
 #show-controls {
     position: absolute;
     height: 100%;
-    background-color: var(--background-fill-primary);
+    background-color: transparent;
     border: 0 !important;
     border-radius: 0;
 }
@@ -695,7 +725,7 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
 @media screen and (width >= 1327px) {
     #past-chats-row {
         position: absolute;
-        top: 16px;
+        top: 36px;
         left: 0;
         width: calc(0.5*(var(--document-width) - 880px - 120px - 16px*2));
         max-width: 300px;
@@ -741,5 +771,48 @@ div.svelte-362y77>*, div.svelte-362y77>.form>* {
 @media screen and (width <= 1300px) {
     .bigProfilePicture {
         display: none;
+    }
+}
+
+#past-chats {
+    max-height: calc(100vh - 195px);
+    overflow-y: scroll !important;
+    border-radius: 0;
+    scrollbar-width: none; /* Hide scrollbar in Firefox by default */
+}
+
+#past-chats label {
+    width: 100%;
+    background-color: transparent !important;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+#past-chats > :nth-child(2) {
+    display: none;
+}
+
+#past-chats > :nth-child(3) {
+    gap: 0;
+}
+
+#past-chats::-webkit-scrollbar {
+    display: none;
+}
+
+#past-chats:hover {
+    scrollbar-width: auto;
+}
+
+#past-chats:hover::-webkit-scrollbar {
+    display: block;
+}
+
+@media screen and (width < 1327px) {
+    #past-chats {
+        max-height: 300px;
     }
 }

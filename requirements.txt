@@ -1,10 +1,11 @@
 accelerate==0.27.*
+aqlm[gpu,cpu]==1.1.3
 colorama
 datasets
 einops
 gradio==4.26.*
-hqq==0.1.5
-jinja2==3.1.2
+hqq==0.1.7.post3
+jinja2==3.1.4
 llama_cpp_python
 lm_eval==0.3.0
 markdown
@@ -12,7 +13,7 @@ numba==0.59.*
 numpy==1.26.*
 optimum==1.17.*
 pandas
-peft==0.8.*
+peft==0.12.*
 Pillow>=9.5.0
 psutil
 pyyaml
@@ -22,7 +23,7 @@ safetensors==0.4.*
 scipy
 sentencepiece
 tensorboard
-transformers==4.39.*
+transformers==4.44.*
 tqdm
 wandb
 
