@@ -38,9 +38,7 @@ def refresh_voices():
     if client is None:
         client = update_api_key(params['api_key'])
     response = client.voices.get_all(show_legacy=True)
-    female_voices = [voice for voice in response.voices if voice.labels.get('gender') == 'female']
     print(f"Available voices: {female_voices}")
-    voice_names = [voice.name for voice in female_voices]
     return voice_names
 
 def refresh_voices_dd():

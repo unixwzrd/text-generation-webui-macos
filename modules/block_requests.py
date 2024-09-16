@@ -40,29 +40,27 @@ def my_get(url, **kwargs):
 
 # Kindly provided by our friend WizardLM-30B
 def my_open(*args, **kwargs):
-    """
-    Custom open function that modifies the file contents before returning.
-    """
     filename = str(args[0])
     if filename.endswith("index.html"):
         with original_open(*args, **kwargs) as f:
             file_contents = f.read()
 
+        file_contents = file_contents if isinstance(file_contents, str) else file_contents.decode('utf-8')
         file_contents = file_contents.replace(
-            b'\t\t<script\n\t\t\tsrc="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"\n\t\t\tasync\n\t\t></script>',
-            b''
+            '\t\t<script\n\t\t\tsrc="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"\n\t\t\tasync\n\t\t></script>',
+            ''
         )
-        file_contents = file_contents.replace(b"cdnjs.cloudflare.com", b"127.0.0.1")
+        file_contents = file_contents.replace("cdnjs.cloudflare.com", "127.0.0.1")
         file_contents = file_contents.replace(
             '</head>',
             '\n    <script src="file/js/katex/katex.min.js"></script>'
             '\n    <script src="file/js/katex/auto-render.min.js"></script>'
             '\n    <script src="file/js/highlightjs/highlight.min.js"></script>'
             '\n    <script src="file/js/highlightjs/highlightjs-copy.min.js"></script>'
-            f'\n    <link id="highlight-css" rel="stylesheet" href="file/css/highlightjs/{"github-dark" if shared.settings["dark_theme"] else "github"}.min.css">'
             '\n    <script>hljs.addPlugin(new CopyButtonPlugin());</script>'
             '\n  </head>'
         )
+        file_contents = file_contents.encode('utf-8')
 
         return io.BytesIO(file_contents)  # return bytes
     else:

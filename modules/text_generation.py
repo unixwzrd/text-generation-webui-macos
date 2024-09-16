@@ -233,7 +233,7 @@ def set_manual_seed(seed):
         torch.cuda.manual_seed_all(seed)
     elif is_torch_xpu_available():
         torch.xpu.manual_seed_all(seed)
-#   torch.xpu.manual_seed_all does not exist.
+#   torch.npu.manual_seed_all does not exist.
 #    elif is_torch_npu_available():
 #        torch.npu.manual_seed_all(seed)
 
