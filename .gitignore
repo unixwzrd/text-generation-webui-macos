@@ -130,3 +130,4 @@ start-webui.sh
 files-to-sync.txt
 rsync-exclude.lst
 .editorconfig
+rsynclist.txt
