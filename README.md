@@ -29,7 +29,7 @@ Otherwise, use these instructions I have on putting together the macOS Python en
 
 I will be updating this README file with new information specifically regarding macOS and Apple Silicon.
 
-Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can Buy Me a Coffee, sponsor this project, or consider me for job opportunities.
+Maintaining and improving support for macOS and Apple Silicon in this project has required significant research, debugging, and development effort. If you find my contributions helpful and want to show your appreciation, you can [Buy Me a Coffee](https://www.ko-fi.com/unixwzrd), [sponsor this project](https://www.patreon.com/unixwzrd), or consider me for job opportunities.
 
 While the focus of this branch is to enhance macOS and Apple Silicon support, I aim to maintain compatibility with Linux and POSIX operating systems. Contributions and feedback related to Linux compatibility are always welcome.
 
@@ -37,7 +37,7 @@ Anyone who would like to assist with supporting Apple Silicon, let me know. Ther
 
 ## All the features of the UI will run on macOS and have been tested on the following configurations, using only llama.cpp
 
-There are CUDA issues to work out, and I'd like to find a better way around this, but wanted to get this out as soon as I could and continue to work on the other in thw background.
+There are CUDA issues to work out, and I'd like to find a better way around this, but wanted to get this out as soon as I could and continue to work on the other in the background.
 
 |   Hardware                       | Memory | macOS Name | Version |
 |----------------------------------|--------|------------|---------|
