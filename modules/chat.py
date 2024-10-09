@@ -1063,7 +1063,12 @@ def handle_start_new_chat_click(state):
 
     convert_to_markdown.cache_clear()
 
-    return [history, html, gr.update(choices=histories, value=histories[0][1])]
+    if len(histories) > 0:
+        past_chats_update = gr.update(choices=histories, value=histories[0][1])
+    else:
+        past_chats_update = gr.update(choices=histories)
+
+    return [history, html, past_chats_update]
 
 
 def handle_delete_chat_confirm_click(state):
@@ -1114,10 +1119,15 @@ def handle_upload_chat_history(load_chat_history, state):
 
     convert_to_markdown.cache_clear()
 
+    if len(histories) > 0:
+        past_chats_update = gr.update(choices=histories, value=histories[0][1])
+    else:
+        past_chats_update = gr.update(choices=histories)
+
     return [
         history,
         html,
-        gr.update(choices=histories, value=histories[0][1])
+        past_chats_update
     ]
 
 
@@ -1136,6 +1146,11 @@ def handle_character_menu_change(state):
 
     convert_to_markdown.cache_clear()
 
+    if len(histories) > 0:
+        past_chats_update = gr.update(choices=histories, value=histories[0][1])
+    else:
+        past_chats_update = gr.update(choices=histories)
+
     return [
         history,
         html,
@@ -1144,7 +1159,7 @@ def handle_character_menu_change(state):
         picture,
         greeting,
         context,
-        gr.update(choices=histories, value=histories[0][1]),
+        past_chats_update,
     ]
 
 
@@ -1155,12 +1170,17 @@ def handle_mode_change(state):
 
     convert_to_markdown.cache_clear()
 
+    if len(histories) > 0:
+        past_chats_update = gr.update(choices=histories, value=histories[0][1])
+    else:
+        past_chats_update = gr.update(choices=histories)
+
     return [
         history,
         html,
         gr.update(visible=state['mode'] != 'instruct'),
         gr.update(visible=state['mode'] == 'chat-instruct'),
-        gr.update(choices=histories, value=histories[0][1])
+        past_chats_update
     ]
 
 

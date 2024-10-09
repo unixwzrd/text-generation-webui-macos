@@ -1,4 +1,4 @@
-# Text generation web UI - Modified for macOS and Apple Silicon 2024-09-15 Edition
+# Text generation web UI - Modified for macOS and Apple Silicon 2024-10-09 Edition v1.15 oobabooga Merge
 
 ## This is the original oobabooga text generation webui modified to run on macOS
 
@@ -41,9 +41,9 @@ There are CUDA issues to work out, and I'd like to find a better way around this
 
 |   Hardware                       | Memory | macOS Name | Version |
 |----------------------------------|--------|------------|---------|
-| MacBook Pro 16" M2 Max Processor |  96GB  |  Sonoma    | 14.6.1  |
+| MacBook Pro 16" M2 Max Processor |  96GB  |  Sequoia   | 15.0.1  |
 
-- [Text generation web UI - Modified for macOS and Apple Silicon 2024-09-15 Edition](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-09-15-edition)
+- [Text generation web UI - Modified for macOS and Apple Silicon 2024-10-09 Edition v1.15 oobabooga Merge](#text-generation-web-ui---modified-for-macos-and-apple-silicon-2024-10-09-edition-v115-oobabooga-merge)
   - [This is the original oobabooga text generation webui modified to run on macOS](#this-is-the-original-oobabooga-text-generation-webui-modified-to-run-on-macos)
   - [All the features of the UI will run on macOS and have been tested on the following configurations, using only llama.cpp](#all-the-features-of-the-ui-will-run-on-macos-and-have-been-tested-on-the-following-configurations-using-only-llamacpp)
   - [Features](#features)
@@ -68,17 +68,17 @@ oobabooga's goal is to become the [AUTOMATIC1111/stable-diffusion-webui](https:/
 
 **Not all features working or tested with mscOS and Apple Silicon.**
 
-* Multiple backends for text generation in a single UI and API, including [Transformers](https://github.com/huggingface/transformers), [llama.cpp](https://github.com/ggerganov/llama.cpp) (through [llama-cpp-python](https://github.com/abetlen/llama-cpp-python)), [ExLlamaV2](https://github.com/turboderp/exllamav2), [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ), and [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM). [AutoAWQ](https://github.com/casper-hansen/AutoAWQ), [HQQ](https://github.com/mobiusml/hqq), and [AQLM](https://github.com/Vahe1994/AQLM) are also supported through the Transformers loader.
-* OpenAI-compatible API server with Chat and Completions endpoints – see the [examples](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples).
-* Automatic prompt formatting for each model using the Jinja2 template in its metadata.
-* Three chat modes: `instruct`, `chat-instruct`, and `chat`, allowing for both instruction-following and casual conversations with characters. `chat-instruct` mode automatically applies the model's template to the chat prompt, ensuring high-quality outputs without manual setup.
-* "Past chats" menu to quickly switch between conversations and start new ones.
-* Free-form generation in the Default/Notebook tabs without being limited to chat turns. Send formatted chat conversations from the Chat tab to these tabs.
-* Multiple sampling parameters and generation options for sophisticated text generation control.
-* Easy switching between different models through the UI without restarting, using the "Model" tab.
-* Simple LoRA fine-tuning tool to customize models with your data.
-* All in one folder. The requirements are installed in a self-contained `installer_files` folder that doesn't interfere with the system's environment.
-* Extensions support, including numerous built-in and user-contributed extensions. See [the wiki](https://github.com/oobabooga/text-generation-webui/wiki/07-%E2%80%90-Extensions) and [the extensions directory](https://github.com/oobabooga/text-generation-webui-extensions) for details.
+- Supports multiple text generation backends in one UI/API, including [Transformers](https://github.com/huggingface/transformers), [llama.cpp](https://github.com/ggerganov/llama.cpp), and [ExLlamaV2](https://github.com/turboderp/exllamav2). [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM), [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ), [AutoAWQ](https://github.com/casper-hansen/AutoAWQ), [HQQ](https://github.com/mobiusml/hqq), and [AQLM](https://github.com/Vahe1994/AQLM) are also supported but you need to install them manually.
+- OpenAI-compatible API with Chat and Completions endpoints – see [examples](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples).
+- Automatic prompt formatting using Jinja2 templates.
+- Three chat modes: `instruct`, `chat-instruct`, and `chat`, with automatic prompt templates in `chat-instruct`.
+- "Past chats" menu to quickly switch between conversations.
+- Free-form text generation in the Default/Notebook tabs without being limited to chat turns. You can send formatted conversations from the Chat tab to these.
+- Multiple sampling parameters and generation options for sophisticated text generation control.
+- Switch between different models easily in the UI without restarting.
+- Simple LoRA fine-tuning tool.
+- Requirements installed in a self-contained `installer_files` directory that doesn't interfere with the system environment.
+- Extension support, with numerous built-in and user-contributed extensions available. See the [wiki](https://github.com/oobabooga/text-generation-webui/wiki/07-%E2%80%90-Extensions) and [extensions directory](https://github.com/oobabooga/text-generation-webui-extensions) for details.
 
 
 
