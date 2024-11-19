@@ -10,6 +10,7 @@ from modules import chat, shared, ui_chat
 from modules.utils import gradio as gr_utils
 from modules.logging_colors import logger
 
+# Parameters and Globals
 params = {
     'activate': True,
     'api_key': None,
@@ -26,6 +27,7 @@ LANG_MODELS = ['eleven_monolingual_v1', 'eleven_multilingual_v2']
 
 _elevenlabs_tts_model = None
 
+# Function Definitions
 def update_api_key(key):
     global client
     params['api_key'] = key
@@ -38,11 +40,31 @@ def refresh_voices():
     if client is None:
         client = update_api_key(params['api_key'])
     response = client.voices.get_all(show_legacy=True)
-    return response
+    # Attempt to access 'voices' attribute
+    try:
+        voices = response.voices
+    except AttributeError:
+        logger.error("The response object does not have a 'voices' attribute.")
+        return []
+    
+    return voices
 
 def refresh_voices_dd():
     all_voices = refresh_voices()
-    return gr.Dropdown.update(value=all_voices[0], choices=all_voices)
+    voice_names = []
+    for voice in all_voices:
+        if hasattr(voice, 'name'):
+            voice_names.append(voice.name)
+        elif isinstance(voice, tuple):
+            voice_names.append(voice[1])  # Adjust index based on actual tuple structure
+        else:
+            logger.warning(f"Unknown voice format: {voice}")
+    
+    if not voice_names:
+        logger.error("No voice names extracted.")
+        return gr.Dropdown.update(value='None', choices=[])
+    
+    return gr.Dropdown.update(value=voice_names[0], choices=voice_names)
 
 def remove_tts_from_history(history):
     for i, entry in enumerate(history['internal']):
@@ -61,10 +83,9 @@ def toggle_text_in_history(history):
     return history
 
 def remove_surrounded_chars(string):
-    # this expression matches to 'as few symbols as possible (0 upwards) between any asterisks' OR
+    # This expression matches 'as few symbols as possible (0 upwards) between any asterisks' OR
     # 'as few symbols as possible (0 upwards) between an asterisk and the end of the string'
     return re.sub(r'\*[^\*]*?(\*|$)', '', string)
-
 
 def state_modifier(state):
     if not params['activate']:
@@ -127,13 +148,29 @@ def ui():
     global _elevenlabs_tts_model, voices
     if not voices:
         voices = refresh_voices()
+        if not voices:
+            logger.error("No voices available from ElevenLabs.")
+            return  # Or handle appropriately
         selected = params['selected_voice']
-        if selected == 'None':
-            params['selected_voice'] = voices[0]
-        elif selected not in voices:
-            logger.error(f'Selected voice {selected} not available, switching to {voices[0]}')
-            params['selected_voice'] = voices[0]
-
+        
+        # Extract voice names based on their format
+        voice_names = []
+        for voice in voices:
+            if hasattr(voice, 'name'):
+                voice_names.append(voice.name)
+            elif isinstance(voice, tuple):
+                voice_names.append(voice[1])  # Adjust index as needed
+            else:
+                logger.warning(f"Unknown voice format: {voice}")
+        
+        if selected == 'None' or selected not in voice_names:
+            if voice_names:
+                params['selected_voice'] = voice_names[0]
+                logger.info(f"Selected voice set to {voice_names[0]}")
+            else:
+                logger.error("Voice names list is empty.")
+                params['selected_voice'] = 'None'
+    
     # Gradio elements
     with gr.Row():
         activate = gr.Checkbox(value=params['activate'], label='Activate TTS')
@@ -141,7 +178,11 @@ def ui():
         show_text = gr.Checkbox(value=params['show_text'], label='Show message text under audio player')
 
     with gr.Row():
-        voice = gr.Dropdown(value=params['selected_voice'], choices=voices, label='TTS Voice')
+        voice = gr.Dropdown(
+            value=params['selected_voice'],
+            choices=voice_names,
+            label='TTS Voice'
+        )
         refresh = gr.Button(value='Refresh')
 
     with gr.Row():
@@ -162,21 +203,39 @@ def ui():
     if shared.is_chat():
         # Convert history with confirmation
         convert_arr = [convert_confirm, convert, convert_cancel]
-        convert.click(lambda: [gr.update(visible=True), gr.update(visible=False), gr.update(visible=True)], None, convert_arr)
+        convert.click(
+            lambda: [gr.update(visible=True), gr.update(visible=False), gr.update(visible=True)],
+            None,
+            convert_arr
+        )
         convert_confirm.click(
-            lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)], None, convert_arr).then(
-            remove_tts_from_history, gr_utils('history'), gr_utils('history')).then(
-            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None).then(
-            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display'))
+            lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)],
+            None,
+            convert_arr
+        ).then(
+            remove_tts_from_history, gr_utils('history'), gr_utils('history')
+        ).then(
+            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None
+        ).then(
+            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display')
+        )
 
-        convert_cancel.click(lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)], None, convert_arr)
+        convert_cancel.click(
+            lambda: [gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)],
+            None,
+            convert_arr
+        )
 
         # Toggle message text in history
         show_text.change(
-            lambda x: params.update({"show_text": x}), show_text, None).then(
-            toggle_text_in_history, gr_utils('history'), gr_utils('history')).then(
-            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None).then(
-            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display'))
+            lambda x: params.update({"show_text": x}), show_text, None
+        ).then(
+            toggle_text_in_history, gr_utils('history'), gr_utils('history')
+        ).then(
+            chat.save_history, gr_utils('history', 'unique_id', 'character_menu', 'mode'), None
+        ).then(
+            chat.redraw_html, gr_utils(ui_chat.reload_arr), gr_utils('display')
+        )
 
     # Event functions to update the parameters in the backend
     activate.change(lambda x: params.update({'activate': x}), activate, None)
