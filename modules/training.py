@@ -303,12 +303,18 @@ def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: 
 
     # == Input validation / processing ==
     yield "Preparing the input..."
-    lora_file_path = clean_path(None, lora_name)
+    lora_file_path = clean_path(shared.args.lora_dir, lora_name)
     if lora_file_path.strip() == '':
         yield "Missing or invalid LoRA file name input."
         return
 
-    lora_file_path = f"{Path(shared.args.lora_dir)}/{lora_file_path}"
+    # Normalize and ensure the path stays within the LoRA directory
+    lora_file_path = str(Path(lora_file_path).resolve())
+    base_lora_dir = str(Path(shared.args.lora_dir).resolve())
+    if not lora_file_path.startswith(base_lora_dir + os.sep):
+        yield "Invalid LoRA file path."
+        return
+
     actual_lr = float(learning_rate)
     model_type = type(shared.model).__name__
 
