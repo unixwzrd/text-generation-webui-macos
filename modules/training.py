@@ -237,12 +237,30 @@ def change_rank_limit(use_higher_ranks: bool):
 
 
 def clean_path(base_path: str, path: str):
-    """Strips unusual symbols and forcibly builds a path as relative to the intended directory."""
-    path = path.replace('\\', '/').replace('..', '_')
-    if base_path is None:
-        return path
+    """Strips unusual symbols and builds a path that is safely constrained to the intended directory."""
+    # Normalize separators and remove obvious traversal tokens
+    if path is None:
+        path = ""
+    path = path.replace("\\", "/").strip()
+    # Disallow absolute paths from untrusted input
+    if os.path.isabs(path):
+        raise ValueError("Absolute paths are not allowed.")
+    path = path.replace("..", "_")
 
-    return f'{Path(base_path).absolute()}/{path}'
+    # If no base path is provided, return a relative, normalized path
+    if base_path is None:
+        # Ensure we don't accidentally create an absolute path here
+        return str(Path(path))
+
+    # Resolve the base directory and candidate path, then ensure containment
+    base = Path(base_path).resolve()
+    candidate = (base / path).resolve()
+
+    # Ensure the candidate is the base itself or a descendant of it
+    if candidate != base and base not in candidate.parents:
+        raise ValueError("Path escapes the allowed base directory.")
+
+    return str(candidate)
 
 
 def backup_adapter(input_folder):
@@ -303,16 +321,14 @@ def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: 
 
     # == Input validation / processing ==
     yield "Preparing the input..."
-    lora_file_path = clean_path(shared.args.lora_dir, lora_name)
-    if lora_file_path.strip() == '':
-        yield "Missing or invalid LoRA file name input."
+    try:
+        lora_file_path = clean_path(shared.args.lora_dir, lora_name)
+    except ValueError:
+        yield "Invalid LoRA file path."
         return
 
-    # Normalize and ensure the path stays within the LoRA directory
-    lora_file_path = str(Path(lora_file_path).resolve())
-    base_lora_dir = str(Path(shared.args.lora_dir).resolve())
-    if not lora_file_path.startswith(base_lora_dir + os.sep):
-        yield "Invalid LoRA file path."
+    if not lora_file_path or lora_file_path.strip() == "":
+        yield "Missing or invalid LoRA file name input."
         return
 
     actual_lr = float(learning_rate)
