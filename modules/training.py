@@ -237,12 +237,38 @@ def change_rank_limit(use_higher_ranks: bool):
 
 
 def clean_path(base_path: str, path: str):
-    """Strips unusual symbols and forcibly builds a path as relative to the intended directory."""
-    path = path.replace('\\', '/').replace('..', '_')
-    if base_path is None:
-        return path
+    """Build a safe path from untrusted input, constrained to an allowed base when provided."""
+    if path is None:
+        path = ""
 
-    return f'{Path(base_path).absolute()}/{path}'
+    normalized_input = path.strip().replace("\\", "/")
+    user_path = Path(normalized_input)
+
+    # Only allow relative user input.
+    if user_path.is_absolute():
+        raise ValueError("Absolute paths are not allowed.")
+
+    # Reject empty/current-dir/traversal segments explicitly.
+    if any(part in ("", ".", "..") for part in user_path.parts):
+        raise ValueError("Path traversal is not allowed.")
+
+    # Build a normalized safe relative path from validated parts.
+    safe_relative = Path(*user_path.parts)
+
+    # If no base is provided, return normalized relative path.
+    if base_path is None:
+        return str(safe_relative)
+
+    base = Path(base_path).resolve()
+    candidate = (base / safe_relative).resolve()
+
+    # Enforce that candidate stays inside base.
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise ValueError("Path escapes the allowed base directory.")
+
+    return str(candidate)
 
 
 def backup_adapter(input_folder):
@@ -303,12 +329,16 @@ def do_train(lora_name: str, always_override: bool, q_proj_en: bool, v_proj_en: 
 
     # == Input validation / processing ==
     yield "Preparing the input..."
-    lora_file_path = clean_path(None, lora_name)
-    if lora_file_path.strip() == '':
+    try:
+        lora_file_path = clean_path(shared.args.lora_dir, lora_name)
+    except ValueError:
+        yield "Invalid LoRA file path."
+        return
+
+    if not lora_file_path or lora_file_path.strip() == "":
         yield "Missing or invalid LoRA file name input."
         return
 
-    lora_file_path = f"{Path(shared.args.lora_dir)}/{lora_file_path}"
     actual_lr = float(learning_rate)
     model_type = type(shared.model).__name__
 
