@@ -2,7 +2,7 @@ accelerate==0.27.*
 colorama
 datasets
 einops
-gradio==6.6.0
+gradio==6.7.0
 hqq==0.1.5
 jinja2==3.1.6
 llama_cpp_python
