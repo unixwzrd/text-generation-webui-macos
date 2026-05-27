@@ -237,27 +237,31 @@ def change_rank_limit(use_higher_ranks: bool):
 
 
 def clean_path(base_path: str, path: str):
-    """Strips unusual symbols and builds a path that is safely constrained to the intended directory."""
-    # Normalize separators and remove obvious traversal tokens
+    """Build a safe path from untrusted input, constrained to an allowed base when provided."""
     if path is None:
         path = ""
-    path = path.replace("\\", "/").strip()
-    # Disallow absolute paths from untrusted input
-    if os.path.isabs(path):
+
+    user_path = Path(path.strip())
+
+    # Only allow relative user input.
+    if user_path.is_absolute():
         raise ValueError("Absolute paths are not allowed.")
-    path = path.replace("..", "_")
 
-    # If no base path is provided, return a relative, normalized path
+    # Reject traversal segments explicitly.
+    if ".." in user_path.parts:
+        raise ValueError("Path traversal is not allowed.")
+
+    # If no base is provided, return normalized relative path.
     if base_path is None:
-        # Ensure we don't accidentally create an absolute path here
-        return str(Path(path))
+        return str(user_path)
 
-    # Resolve the base directory and candidate path, then ensure containment
     base = Path(base_path).resolve()
-    candidate = (base / path).resolve()
+    candidate = (base / user_path).resolve()
 
-    # Ensure the candidate is the base itself or a descendant of it
-    if candidate != base and base not in candidate.parents:
+    # Enforce that candidate stays inside base.
+    try:
+        candidate.relative_to(base)
+    except ValueError:
         raise ValueError("Path escapes the allowed base directory.")
 
     return str(candidate)
