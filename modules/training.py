@@ -241,22 +241,26 @@ def clean_path(base_path: str, path: str):
     if path is None:
         path = ""
 
-    user_path = Path(path.strip())
+    normalized_input = path.strip().replace("\\", "/")
+    user_path = Path(normalized_input)
 
     # Only allow relative user input.
     if user_path.is_absolute():
         raise ValueError("Absolute paths are not allowed.")
 
-    # Reject traversal segments explicitly.
-    if ".." in user_path.parts:
+    # Reject empty/current-dir/traversal segments explicitly.
+    if any(part in ("", ".", "..") for part in user_path.parts):
         raise ValueError("Path traversal is not allowed.")
+
+    # Build a normalized safe relative path from validated parts.
+    safe_relative = Path(*user_path.parts)
 
     # If no base is provided, return normalized relative path.
     if base_path is None:
-        return str(user_path)
+        return str(safe_relative)
 
     base = Path(base_path).resolve()
-    candidate = (base / user_path).resolve()
+    candidate = (base / safe_relative).resolve()
 
     # Enforce that candidate stays inside base.
     try:
